@@ -74,22 +74,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
         
         <div className="flex items-center gap-xs">
-          <button 
+          <button
             id="notifications-btn"
             className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
             title="Notifications"
           >
             <span className="material-symbols-outlined">notifications</span>
           </button>
-          <button 
-            id="chart-view-btn"
-            className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
-            title="Analytics"
-            onClick={() => setActiveTab('Analytics')}
-          >
-            <span className="material-symbols-outlined">candlestick_chart</span>
-          </button>
-          <div 
+          <div
             id="profile-dropdown"
             className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center border border-outline-variant cursor-pointer overflow-hidden"
             title="User Profile"

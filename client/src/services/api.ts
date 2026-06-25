@@ -87,6 +87,29 @@ export async function fetchStats(): Promise<Stats> {
   return res.json();
 }
 
+export interface AssistantMessage {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
+// Ask the AI pricing/condition agent. Optionally include an image (data URL)
+// for the latest user turn so it can assess condition from a photo.
+export async function askAssistant(
+  messages: AssistantMessage[],
+  imageDataUrl?: string
+): Promise<{ reply: string; source: 'ai' | 'offline' }> {
+  const res = await fetch(`${API_BASE}/assistant`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages, imageDataUrl }),
+  });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || 'The assistant is unavailable right now.');
+  }
+  return res.json();
+}
+
 export async function deleteCollectible(id: string): Promise<{ message: string; id: string }> {
   const res = await fetch(`${API_BASE}/collectibles/${id}`, {
     method: 'DELETE',

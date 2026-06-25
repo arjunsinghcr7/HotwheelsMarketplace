@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import Anthropic from '@anthropic-ai/sdk';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
@@ -86,11 +87,62 @@ async function writeDB(data: Database): Promise<void> {
   await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
 }
 
+// System prompt for the AI pricing/condition assistant.
+const ASSISTANT_SYSTEM = `You are an expert Hot Wheels and die-cast collectible appraiser embedded in a collector marketplace app.
+Help users price their cars and judge condition. Be concise, practical, and friendly.
+
+When pricing, reason from: rarity tier (Mainline, Treasure Hunt (TH), Super Treasure Hunt (STH), Chase), brand, release year/age, and condition. Give an estimated price range in USD with a one-line rationale.
+
+When the user uploads a PHOTO, assess the visible condition: paint/Spectraflame quality, wheels/tires, packaging (carded vs loose, blister/card creases), and any visible defects or rub. Give a condition grade (Mint (M), Near Mint (NM), Very Good (VG), or worse) and a price range, and note what you cannot tell from the image. If the photo is unclear, say so.
+
+Keep answers short (a few sentences). Never invent a serial number or specific provenance you cannot see.`;
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
+// Parse a data URL ("data:image/png;base64,XXXX") into media type + raw base64.
+function parseDataUrl(dataUrl: string): { mediaType: string; data: string } | null {
+  const match = /^data:([^;]+);base64,(.+)$/s.exec(dataUrl);
+  if (!match) return null;
+  return { mediaType: match[1], data: match[2] };
+}
+
+// Offline fallback: a rough rule-based estimate when no API key is configured.
+function heuristicReply(text: string, hasImage: boolean): string {
+  const t = text.toLowerCase();
+
+  let tier = 'Mainline';
+  let range = '$5 – $20';
+  if (t.includes('super treasure') || /\bsth\b/.test(t)) {
+    tier = 'Super Treasure Hunt';
+    range = '$150 – $400';
+  } else if (t.includes('chase')) {
+    tier = 'Chase';
+    range = '$100 – $600';
+  } else if (t.includes('treasure') || /\bth\b/.test(t)) {
+    tier = 'Treasure Hunt';
+    range = '$40 – $120';
+  }
+
+  let conditionNote = '';
+  if (/(mint|sealed|carded|unopened)/.test(t)) conditionNote = ' Mint/carded examples sit at the top of that range.';
+  else if (/(loose|played|damaged|rub|crease|worn)/.test(t)) conditionNote = ' Loose or worn examples sit at the bottom of that range.';
+
+  const imageNote = hasImage
+    ? '\n\n(Live photo-condition analysis needs the AI service. Set ANTHROPIC_API_KEY in the deployment to enable it.)'
+    : '';
+
+  return `Rough estimate for a **${tier}** piece: **${range}**.${conditionNote}` +
+    `\n\nThis is an offline rule-of-thumb. For a real appraisal that factors in the exact casting, year, and a photo, configure the AI service.${imageNote}`;
+}
+
 export function createApp() {
   const app = express();
 
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({ limit: '12mb' })); // allow base64 image uploads to the assistant
 
   // Endpoint: GET /api/collectibles
   app.get('/api/collectibles', async (req: Request, res: Response) => {
@@ -230,6 +282,69 @@ export function createApp() {
       res.json(db.stats);
     } catch (error) {
       res.status(500).json({ error: 'Failed to read stats' });
+    }
+  });
+
+  // Endpoint: POST /api/assistant — AI pricing & condition agent (Claude, with vision)
+  app.post('/api/assistant', async (req: Request, res: Response) => {
+    try {
+      const messages: ChatMessage[] = Array.isArray(req.body?.messages) ? req.body.messages : [];
+      const imageDataUrl: string | undefined = req.body?.imageDataUrl;
+
+      if (messages.length === 0) {
+        return res.status(400).json({ error: 'No messages provided' });
+      }
+
+      const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+      const lastUserText = lastUser?.text || '';
+
+      // Graceful fallback when the AI service isn't configured.
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.json({ reply: heuristicReply(lastUserText, !!imageDataUrl), source: 'offline' });
+      }
+
+      const client = new Anthropic();
+
+      // Build the message history; attach the image (if any) to the latest user turn.
+      const parsedImage = imageDataUrl ? parseDataUrl(imageDataUrl) : null;
+      const apiMessages = messages.map((m, i) => {
+        const isLast = i === messages.length - 1;
+        if (isLast && m.role === 'user' && parsedImage) {
+          return {
+            role: 'user' as const,
+            content: [
+              {
+                type: 'image' as const,
+                source: {
+                  type: 'base64' as const,
+                  media_type: parsedImage.mediaType as 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp',
+                  data: parsedImage.data,
+                },
+              },
+              { type: 'text' as const, text: m.text || 'Assess this car: condition and a fair price range.' },
+            ],
+          };
+        }
+        return { role: m.role, content: m.text };
+      });
+
+      const response = await client.messages.create({
+        model: 'claude-opus-4-8',
+        max_tokens: 1024,
+        system: ASSISTANT_SYSTEM,
+        messages: apiMessages,
+      });
+
+      const reply = response.content
+        .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+        .map((b) => b.text)
+        .join('')
+        .trim();
+
+      res.json({ reply: reply || 'Sorry, I could not generate a response.', source: 'ai' });
+    } catch (error: any) {
+      console.error('Assistant error:', error?.message || error);
+      res.status(500).json({ error: 'The assistant is unavailable right now. Please try again.' });
     }
   });
 

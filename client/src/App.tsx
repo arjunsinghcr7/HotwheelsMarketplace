@@ -14,6 +14,7 @@ import { CollectionAnalysis } from './components/CollectionAnalysis';
 import { MarketAds } from './components/MarketAds';
 import { CommunityBoard } from './components/CommunityBoard';
 import { WatchlistCard } from './components/WatchlistCard';
+import { AIAssistant } from './components/AIAssistant';
 import type { CarFormData } from './components/VaultDiscoveryForm';
 import {
   fetchCollectibles,
@@ -246,7 +247,7 @@ function App() {
           {/* Left-side button that opens the Vault Discovery slide-in */}
           <button
             onClick={() => setIsFormOpen(true)}
-            className="fixed bottom-16 left-4 xl:left-[17rem] z-30 flex items-center gap-2 pl-3 pr-4 py-3 rounded-full bg-secondary-container text-on-secondary-container shadow-xl hover:brightness-110 active:scale-95 transition-all"
+            className="fixed bottom-24 left-4 xl:left-[17rem] z-30 flex items-center gap-2 pl-3 pr-4 py-3 rounded-full bg-surface-container-high text-on-surface border border-outline-variant shadow-xl hover:border-secondary active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined">add</span>
             <span className="text-label-md font-bold">Add a Car</span>
@@ -348,6 +349,9 @@ function App() {
       
       {/* Bottom Live Market Ticker */}
       <LiveTicker />
+
+      {/* Floating AI price assistant (bottom-left) */}
+      <AIAssistant />
 
       {/* Pricing History Modal */}
       <HistoryModal

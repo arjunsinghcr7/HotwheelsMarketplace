@@ -8,6 +8,7 @@
     "build": "npm.cmd run build --prefix server && npm.cmd run build --prefix client"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.106.0",
     "cors": "^2.8.5",
     "express": "^4.19.2"
   },
