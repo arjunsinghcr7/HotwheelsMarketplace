@@ -18,9 +18,10 @@ interface VaultDiscoveryFormProps {
   onBuy: (data: CarFormData) => Promise<void> | void;
   onSell: (data: CarFormData) => Promise<void> | void;
   onTrack: (data: CarFormData) => Promise<void> | void;
+  onClose?: () => void;
 }
 
-export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onBuy, onSell, onTrack }) => {
+export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onBuy, onSell, onTrack, onClose }) => {
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('Hot Wheels');
   const [vehicleType, setVehicleType] = useState('Muscle');
@@ -108,9 +109,15 @@ export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onBuy, o
     <section className="w-full h-full border-r border-outline-variant flex flex-col bg-surface-container-lowest">
       <div className="p-md border-b border-outline-variant flex items-center justify-between">
         <h2 className="font-headline-md text-headline-md text-on-surface">Vault Discovery</h2>
-        <span className="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface transition-colors">
-          filter_alt
-        </span>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-2 -mr-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest rounded-full transition-colors"
+            title="Close"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-md custom-scrollbar space-y-lg">

@@ -78,9 +78,8 @@ function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isRarityGuideOpen, setIsRarityGuideOpen] = useState(false);
 
-  // Mobile navigation helper
-  // Since Left Panel (Form) is 1/3 and Right Panel is 2/3, we can switch views on mobile
-  const [mobileActiveView, setMobileActiveView] = useState<'listings' | 'form'>('listings');
+  // Vault Discovery is now a slide-in drawer
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Load database items on start
   const loadData = async () => {
@@ -123,7 +122,6 @@ function App() {
     await addCollectible({ ...formData, image: pickImage(formData.rarityLevel) });
     // Reload items and update global stats
     await loadData();
-    setMobileActiveView('listings');
   };
 
   // "Buy" — add the entered car to the user's personal collection.
@@ -207,6 +205,10 @@ function App() {
   // Fall back to the default Porsche premium listing when nothing is selected.
   const displayedFeatured = featuredItem || DEFAULT_FEATURED;
 
+  // Vault stats reflect exactly the user's collection — nothing more, nothing less.
+  const myTotalValue = myCollection.reduce((sum, c) => sum + c.price, 0);
+  const myCount = myCollection.length;
+
   return (
     <div className="h-screen flex flex-col bg-surface-dim text-on-surface select-none">
       <Navbar 
@@ -239,44 +241,20 @@ function App() {
         ) : activeMenu === 'Community' ? (
           <CommunityBoard />
         ) : (
-          <div className="h-full flex overflow-hidden">
+          <div className="h-full relative overflow-hidden">
 
-          {/* Mobile view switch bar (Visible on mobile/tablet to toggle Form vs Listings) */}
-          <div className="lg:hidden fixed top-16 left-0 right-0 h-10 bg-surface-container border-b border-outline-variant z-30 flex">
-            <button
-              onClick={() => setMobileActiveView('listings')}
-              className={`flex-1 font-label-sm uppercase tracking-wider text-[11px] border-r border-outline-variant ${
-                mobileActiveView === 'listings' ? 'bg-secondary-container text-on-secondary-container font-bold' : 'text-on-surface-variant'
-              }`}
-            >
-              Vault Listings & Stats
-            </button>
-            <button
-              onClick={() => setMobileActiveView('form')}
-              className={`flex-1 font-label-sm uppercase tracking-wider text-[11px] ${
-                mobileActiveView === 'form' ? 'bg-secondary-container text-on-secondary-container font-bold' : 'text-on-surface-variant'
-              }`}
-            >
-              Vault Discovery Form
-            </button>
-          </div>
+          {/* Left-side button that opens the Vault Discovery slide-in */}
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="fixed bottom-16 left-4 xl:left-[17rem] z-30 flex items-center gap-2 pl-3 pr-4 py-3 rounded-full bg-secondary-container text-on-secondary-container shadow-xl hover:brightness-110 active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined">add</span>
+            <span className="text-label-md font-bold">Add a Car</span>
+          </button>
 
-          {/* Left Panel: Form entry */}
-          <div className={`h-full ${
-            mobileActiveView === 'form' ? 'block w-full pt-10' : 'hidden'
-          } lg:block lg:w-1/3`}>
-            <VaultDiscoveryForm
-              onBuy={handleBuyCar}
-              onSell={handleSellCar}
-              onTrack={handleTrackCar}
-            />
-          </div>
-          
-          {/* Right Panel: Analytics & listings */}
-          <div className={`h-full flex-1 flex-col bg-background overflow-y-auto custom-scrollbar p-sm lg:p-lg gap-lg ${
-            mobileActiveView === 'listings' ? 'flex pt-12 lg:pt-0' : 'hidden'
-          } lg:flex`}>
-            
+          {/* Main content (full width) */}
+          <div className="h-full bg-background overflow-y-auto custom-scrollbar p-sm lg:p-lg flex flex-col gap-lg">
+
             {/* Hero Featured & Key Stats */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
               <FeaturedCard
@@ -292,10 +270,10 @@ function App() {
                     <span className="material-symbols-outlined text-secondary">payments</span>
                   </div>
                   <p className="text-headline-lg font-bold text-white">
-                    ${stats ? stats.totalCollectionValue.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '42,850.25'}
+                    ${myTotalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
-                  <p className="text-label-sm text-green-400 flex items-center gap-1 mt-1">
-                    <span className="material-symbols-outlined text-sm">trending_up</span> +12.4% this month
+                  <p className="text-label-sm text-on-surface-variant mt-1">
+                    Across {myCount} car{myCount === 1 ? '' : 's'} you own
                   </p>
                 </div>
                 
@@ -305,16 +283,10 @@ function App() {
                     <span className="material-symbols-outlined text-on-surface-variant">inventory_2</span>
                   </div>
                   <p className="text-headline-lg font-bold text-white">
-                    {stats ? stats.itemsInVault.toLocaleString('en-US') : '1,428'}
+                    {myCount.toLocaleString('en-US')}
                   </p>
-                  <div className="mt-xs w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-primary h-full transition-all duration-500" 
-                      style={{ width: `${stats ? stats.setCompletePercent : 85}%` }}
-                    ></div>
-                  </div>
                   <p className="text-[11px] text-on-surface-variant mt-2">
-                    {stats ? stats.setCompletePercent : 85}% of {stats ? stats.setCompleteName : 'Set #2024-B'} complete
+                    {myCount === 0 ? 'Add cars from the Vault Discovery form' : `Car${myCount === 1 ? '' : 's'} in your collection`}
                   </p>
                 </div>
               </div>
@@ -351,6 +323,24 @@ function App() {
             <DealsSection deals={deals} />
 
           </div>
+
+          {/* Slide-in Vault Discovery drawer */}
+          {isFormOpen && (
+            <div className="fixed inset-0 z-50">
+              <div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={() => setIsFormOpen(false)}
+              ></div>
+              <div className="absolute inset-y-0 left-0 w-full max-w-md shadow-2xl animate-slide-in-left">
+                <VaultDiscoveryForm
+                  onBuy={handleBuyCar}
+                  onSell={handleSellCar}
+                  onTrack={handleTrackCar}
+                  onClose={() => setIsFormOpen(false)}
+                />
+              </div>
+            </div>
+          )}
           </div>
         )}
         </main>
