@@ -13,6 +13,8 @@ import { CollectionGallery } from './components/CollectionGallery';
 import { CollectionAnalysis } from './components/CollectionAnalysis';
 import { MarketAds } from './components/MarketAds';
 import { CommunityBoard } from './components/CommunityBoard';
+import { WatchlistCard } from './components/WatchlistCard';
+import type { CarFormData } from './components/VaultDiscoveryForm';
 import {
   fetchCollectibles,
   fetchDeals,
@@ -25,8 +27,16 @@ import type {
   Deal,
   Stats
 } from './services/api';
-import type { MyCar } from './services/collection';
-import { getMyCollection, addMyCar, deleteMyCar } from './services/collection';
+import type { MyCar, WatchItem } from './services/collection';
+import {
+  getMyCollection, addMyCar, deleteMyCar,
+  getWatchlist, addWatch, removeWatch
+} from './services/collection';
+
+// Default images used for cars added without an uploaded photo.
+const STH_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTb2T8AcPKiNvWwjgdmpDF9zMLcpRoZmfuUZJAWwZnIWFFwrfp0EWmJoGPupIFS3aGdAZ-XXOFSxQ7ebaFVs8kvREsZxHGjsKZn5GLTBAU9ROjgn6JBuxMLrAp_3SnMegJZELKkT-x_21iVHoi-nyoEHQQpNFXEwdLKcncc8pKXKSoc7jZw7FXCXvIo-ee74mSRPG_OEzK1asa9FLPAwq7plDgpNojbnyRrHGyQG9Ljw9QVolvN4sBuUJmlE8zmX8ua7gk5Df2dKvm';
+const DEFAULT_CAR_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCAjh6jyreGcOpuQAa9epE6zgxjUH4EfAj3etQwtv9LmW_2C4C4R33WoqYzCiXk0jrXSHWAhgc9vZQVlqUreyVVSem4CAOU7S7gpVwYsHuY3U2mTX8rc9T-o8o-kLsotwy1apmQnwt3BHOvWiOx65Gmc55F7w2TmWuyel5JokjJLd1cstF9vknPt7pLJJALbOZYWQFYV1j9LwbpDVhS5oEFaIgI3KhcKqG2837zSRkQCzPl90VFQFCa0FNd5u53G1TL1j8Lin_MUay4';
+const pickImage = (rarityLevel: string) => (rarityLevel === 'Super Treasure Hunt' ? STH_IMAGE : DEFAULT_CAR_IMAGE);
 
 // Shown as the hero "Premium Listing" whenever no specific item is selected.
 const DEFAULT_FEATURED: Collectible = {
@@ -57,9 +67,10 @@ function App() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [featuredItem, setFeaturedItem] = useState<Collectible | null>(null);
 
-  // User's personal collection (stored locally in the browser)
+  // User's personal collection + price watchlist (stored locally in the browser)
   const [myCollection, setMyCollection] = useState<MyCar[]>([]);
-  
+  const [watchlist, setWatchlist] = useState<WatchItem[]>([]);
+
   // Chart timeframe state
   const [timeframe, setTimeframe] = useState<'1W' | '1M' | '1Y'>('1M');
   
@@ -96,6 +107,7 @@ function App() {
   useEffect(() => {
     loadData();
     setMyCollection(getMyCollection());
+    setWatchlist(getWatchlist());
   }, []);
 
   const handleAddMyCar = (car: Omit<MyCar, 'id'>) => {
@@ -106,31 +118,39 @@ function App() {
     setMyCollection(deleteMyCar(id));
   };
 
-  const handleAddCollectible = async (formData: {
-    name: string;
-    brand: string;
-    vehicleType: string;
-    scale: string;
-    condition: string;
-    releaseYear: number;
-    price: number;
-    rarityLevel: string;
-    notes: string;
-  }) => {
-    // Add default image based on vehicle type to match design
-    let image = '';
-    if (formData.rarityLevel === 'Super Treasure Hunt') {
-      // Golden reflective look
-      image = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTb2T8AcPKiNvWwjgdmpDF9zMLcpRoZmfuUZJAWwZnIWFFwrfp0EWmJoGPupIFS3aGdAZ-XXOFSxQ7ebaFVs8kvREsZxHGjsKZn5GLTBAU9ROjgn6JBuxMLrAp_3SnMegJZELKkT-x_21iVHoi-nyoEHQQpNFXEwdLKcncc8pKXKSoc7jZw7FXCXvIo-ee74mSRPG_OEzK1asa9FLPAwq7plDgpNojbnyRrHGyQG9Ljw9QVolvN4sBuUJmlE8zmX8ua7gk5Df2dKvm';
-    } else {
-      // Muscle default look
-      image = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCAjh6jyreGcOpuQAa9epE6zgxjUH4EfAj3etQwtv9LmW_2C4C4R33WoqYzCiXk0jrXSHWAhgc9vZQVlqUreyVVSem4CAOU7S7gpVwYsHuY3U2mTX8rc9T-o8o-kLsotwy1apmQnwt3BHOvWiOx65Gmc55F7w2TmWuyel5JokjJLd1cstF9vknPt7pLJJALbOZYWQFYV1j9LwbpDVhS5oEFaIgI3KhcKqG2837zSRkQCzPl90VFQFCa0FNd5u53G1TL1j8Lin_MUay4';
-    }
-
-    await addCollectible({ ...formData, image });
+  // "Sell" — list the entered car on the marketplace.
+  const handleSellCar = async (formData: CarFormData) => {
+    await addCollectible({ ...formData, image: pickImage(formData.rarityLevel) });
     // Reload items and update global stats
     await loadData();
     setMobileActiveView('listings');
+  };
+
+  // "Buy" — add the entered car to the user's personal collection.
+  const handleBuyCar = (formData: CarFormData) => {
+    handleAddMyCar({
+      name: formData.name,
+      price: formData.price,
+      rarityLevel: formData.rarityLevel,
+      releaseYear: formData.releaseYear,
+      image: pickImage(formData.rarityLevel),
+      notes: formData.notes || undefined,
+    });
+  };
+
+  // "Track" — add the entered car to the price watchlist.
+  const handleTrackCar = (formData: CarFormData) => {
+    setWatchlist(addWatch({
+      name: formData.name,
+      brand: formData.brand,
+      price: formData.price,
+      rarityLevel: formData.rarityLevel,
+      releaseYear: formData.releaseYear,
+    }));
+  };
+
+  const handleRemoveWatch = (id: string) => {
+    setWatchlist(removeWatch(id));
   };
 
   const handleDeleteCollectible = async (id: string) => {
@@ -245,7 +265,11 @@ function App() {
           <div className={`h-full ${
             mobileActiveView === 'form' ? 'block w-full pt-10' : 'hidden'
           } lg:block lg:w-1/3`}>
-            <VaultDiscoveryForm onAddCollectible={handleAddCollectible} />
+            <VaultDiscoveryForm
+              onBuy={handleBuyCar}
+              onSell={handleSellCar}
+              onTrack={handleTrackCar}
+            />
           </div>
           
           {/* Right Panel: Analytics & listings */}
@@ -306,12 +330,15 @@ function App() {
                 setTimeframe={setTimeframe}
               />
               
-              <RarityGauge 
+              <RarityGauge
                 items={collectibles}
                 totalUnitsCount={stats ? stats.itemsInVault : 1428}
               />
             </div>
-            
+
+            {/* Tracking watchlist (cars added via the Track button) */}
+            <WatchlistCard items={watchlist} onRemove={handleRemoveWatch} />
+
             {/* Recent Listings */}
             <RecentListings
               items={filteredCollectibles}

@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
 
-interface VaultDiscoveryFormProps {
-  onAddCollectible: (data: {
-    name: string;
-    brand: string;
-    vehicleType: string;
-    scale: string;
-    condition: string;
-    releaseYear: number;
-    price: number;
-    rarityLevel: string;
-    notes: string;
-  }) => Promise<void>;
+export interface CarFormData {
+  name: string;
+  brand: string;
+  vehicleType: string;
+  scale: string;
+  condition: string;
+  releaseYear: number;
+  price: number;
+  rarityLevel: string;
+  notes: string;
 }
 
-export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onAddCollectible }) => {
+type Action = 'buy' | 'sell' | 'track';
+
+interface VaultDiscoveryFormProps {
+  onBuy: (data: CarFormData) => Promise<void> | void;
+  onSell: (data: CarFormData) => Promise<void> | void;
+  onTrack: (data: CarFormData) => Promise<void> | void;
+}
+
+export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onBuy, onSell, onTrack }) => {
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('Hot Wheels');
   const [vehicleType, setVehicleType] = useState('Muscle');
@@ -24,54 +30,78 @@ export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onAddCol
   const [price, setPrice] = useState('');
   const [rarityLevel, setRarityLevel] = useState('Treasure Hunt'); // Default in screen layout
   const [notes, setNotes] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeAction, setActiveAction] = useState<Action | ''>('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const rarityLevels = ['Mainline', 'Treasure Hunt', 'Super Treasure Hunt', 'Chase'];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Validate inputs and build the payload, or return null and surface an error.
+  const buildData = (): CarFormData | null => {
     setErrorMessage('');
-    
+    setSuccessMessage('');
+
     if (!name.trim()) {
       setErrorMessage('Product Name / Series is required.');
-      return;
+      return null;
     }
     if (!releaseYear || isNaN(Number(releaseYear))) {
       setErrorMessage('Please enter a valid Release Year.');
-      return;
+      return null;
     }
     const cleanPrice = price.replace('$', '').trim();
     if (!cleanPrice || isNaN(Number(cleanPrice)) || Number(cleanPrice) < 0) {
       setErrorMessage('Please enter a valid positive Price.');
-      return;
+      return null;
     }
 
-    try {
-      setIsSubmitting(true);
-      await onAddCollectible({
-        name,
-        brand,
-        vehicleType,
-        scale,
-        condition,
-        releaseYear: parseInt(releaseYear),
-        price: parseFloat(cleanPrice),
-        rarityLevel,
-        notes,
-      });
+    return {
+      name: name.trim(),
+      brand,
+      vehicleType,
+      scale,
+      condition,
+      releaseYear: parseInt(releaseYear),
+      price: parseFloat(cleanPrice),
+      rarityLevel,
+      notes,
+    };
+  };
 
-      // Reset form
+  const SUCCESS_TEXT: Record<Action, string> = {
+    buy: 'Added to your collection — see the Collection tab.',
+    sell: 'Listed on the marketplace — see Recent Listings.',
+    track: 'Now tracking this car in your watchlist.',
+  };
+
+  const handleAction = async (action: Action) => {
+    if (activeAction) return; // prevent double-submits
+    const data = buildData();
+    if (!data) return;
+
+    try {
+      setActiveAction(action);
+      if (action === 'buy') await onBuy(data);
+      else if (action === 'sell') await onSell(data);
+      else await onTrack(data);
+
+      // Reset the entry fields
       setName('');
       setPrice('');
       setNotes('');
       setRarityLevel('Treasure Hunt');
-      alert('Collectible added successfully!');
+      setSuccessMessage(SUCCESS_TEXT[action]);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to add collectible.');
+      setErrorMessage(err.message || 'Action failed. Please try again.');
     } finally {
-      setIsSubmitting(false);
+      setActiveAction('');
     }
+  };
+
+  // Enter key in the form triggers the primary action (Buy).
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAction('buy');
   };
 
   return (
@@ -87,6 +117,13 @@ export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onAddCol
         {errorMessage && (
           <div className="p-sm bg-error-container text-on-error-container rounded-lg text-label-sm border border-outline-variant">
             {errorMessage}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="p-sm bg-secondary-container text-on-secondary-container rounded-lg text-label-sm border border-outline-variant flex items-center gap-xs">
+            <span className="material-symbols-outlined text-sm">check_circle</span>
+            {successMessage}
           </div>
         )}
 
@@ -246,14 +283,42 @@ export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onAddCol
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full py-md racing-gradient text-white font-headline-md rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-sm disabled:opacity-50 disabled:scale-100"
-        >
-          <span className="material-symbols-outlined">track_changes</span>
-          {isSubmitting ? 'Processing...' : 'Buy, Sell & Track Collection'}
-        </button>
+        <div className="grid grid-cols-3 gap-sm">
+          {/* Buy: add to your personal collection */}
+          <button
+            type="submit"
+            disabled={!!activeAction}
+            title="Add this car to your collection"
+            className="flex flex-col items-center justify-center gap-1 py-sm racing-gradient text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+          >
+            <span className="material-symbols-outlined">shopping_cart</span>
+            <span className="text-label-sm">{activeAction === 'buy' ? 'Buying…' : 'Buy'}</span>
+          </button>
+
+          {/* Sell: list on the marketplace */}
+          <button
+            type="button"
+            onClick={() => handleAction('sell')}
+            disabled={!!activeAction}
+            title="List this car on the marketplace"
+            className="flex flex-col items-center justify-center gap-1 py-sm bg-surface-container border border-secondary text-secondary font-bold rounded-xl hover:bg-secondary/10 active:scale-95 transition-all disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined">sell</span>
+            <span className="text-label-sm">{activeAction === 'sell' ? 'Listing…' : 'Sell'}</span>
+          </button>
+
+          {/* Track: add to the price watchlist */}
+          <button
+            type="button"
+            onClick={() => handleAction('track')}
+            disabled={!!activeAction}
+            title="Track this car's price"
+            className="flex flex-col items-center justify-center gap-1 py-sm bg-surface-container border border-tertiary text-tertiary font-bold rounded-xl hover:bg-tertiary/10 active:scale-95 transition-all disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined">visibility</span>
+            <span className="text-label-sm">{activeAction === 'track' ? 'Tracking…' : 'Track'}</span>
+          </button>
+        </div>
       </form>
     </section>
   );

@@ -43,6 +43,43 @@ export function deleteMyCar(id: string): MyCar[] {
   return cars;
 }
 
+// ---- Watchlist (cars the user is tracking the price of) --------------------
+
+export interface WatchItem {
+  id: string;
+  name: string;
+  brand: string;
+  price: number;
+  rarityLevel: string;
+  releaseYear?: number;
+}
+
+const WATCHLIST_KEY = 'hw_watchlist';
+
+export function getWatchlist(): WatchItem[] {
+  try {
+    const raw = localStorage.getItem(WATCHLIST_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addWatch(item: Omit<WatchItem, 'id'>): WatchItem[] {
+  const next: WatchItem = { ...item, id: `w_${Date.now()}` };
+  const list = [next, ...getWatchlist()];
+  localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
+  return list;
+}
+
+export function removeWatch(id: string): WatchItem[] {
+  const list = getWatchlist().filter((w) => w.id !== id);
+  localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
+  return list;
+}
+
 // Read an image File and return a downscaled JPEG data URL so large photos do
 // not blow past the localStorage quota.
 export function fileToDataURL(file: File, maxWidth = 900): Promise<string> {
