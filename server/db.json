@@ -1,0 +1,120 @@
+{
+  "collectibles": [
+    {
+      "id": "1",
+      "name": "'67 Custom Mustang",
+      "brand": "Hot Wheels",
+      "vehicleType": "Muscle",
+      "scale": "1:64",
+      "condition": "Mint (M)",
+      "releaseYear": 1967,
+      "price": 1240.00,
+      "rarityLevel": "Super Treasure Hunt",
+      "series": "Redline Series",
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCIkDdUAS5EKKUUyyrIkPEhe1KzIUPfVsmLNAZuLmbt2-Orgag94Sz7emH59UT3lmQwroTj4QjR7xPUo1vsrVllc-jtxSeRombd-7MlV84ya1Va1EjvvFb4BrSh23QyR2lpCBlN7lkuuWcXcD0nSRYQghONgjUJdBNv_Wz7cp7RYgGNyp3D70Jv-b_kFXAhD-EJAXub6bORsVcyz1hDUvSzNSx6prYKaJWhA5gVUUEgTm7iWGzqWA_WL5Q0tvDuOGvkQbJMfWdjRqjx",
+      "notes": "A vintage 1967 Hot Wheels Custom Mustang in spectrum-flame red, resting on a brushed metal surface. Rarity: STH. Serial #001/250.",
+      "isFeatured": true,
+      "demandScore": 98
+    },
+    {
+      "id": "2",
+      "name": "Plymouth Superbird '70",
+      "brand": "Matchbox",
+      "vehicleType": "Muscle",
+      "scale": "1:64",
+      "condition": "Mint (M)",
+      "releaseYear": 1970,
+      "price": 245.00,
+      "rarityLevel": "Treasure Hunt",
+      "series": "Retro Muscle",
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCAjh6jyreGcOpuQAa9epE6zgxjUH4EfAj3etQwtv9LmW_2C4C4R33WoqYzCiXk0jrXSHWAhgc9vZQVlqUreyVVSem4CAOU7S7gpVwYsHuY3U2mTX8rc9T-o8o-kLsotwy1apmQnwt3BHOvWiOx65Gmc55F7w2TmWuyel5JokjJLd1cstF9vknPt7pLJJALbOZYWQFYV1j9LwbpDVhS5oEFaIgI3KhcKqG2837zSRkQCzPl90VFQFCa0FNd5u53G1TL1j8Lin_MUay4",
+      "notes": "1970 Plymouth Superbird in vibrant orange. High-key professional lighting with industrial dark mode tones."
+    },
+    {
+      "id": "3",
+      "name": "Lamborghini Centenario",
+      "brand": "Hot Wheels",
+      "vehicleType": "Exotic",
+      "scale": "1:64",
+      "condition": "Near Mint (NM)",
+      "releaseYear": 2021,
+      "price": 1100.00,
+      "rarityLevel": "Super Treasure Hunt",
+      "series": "HW Exotics",
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBTb2T8AcPKiNvWwjgdmpDF9zMLcpRoZmfuUZJAWwZnIWFFwrfp0EWmJoGPupIFS3aGdAZ-XXOFSxQ7ebaFVs8kvREsZxHGjsKZn5GLTBAU9ROjgn6JBuxMLrAp_3SnMegJZELKkT-x_21iVHoi-nyoEHQQpNFXEwdLKcncc8pKXKSoc7jZw7FXCXvIo-ee74mSRPG_OEzK1asa9FLPAwq7plDgpNojbnyRrHGyQG9Ljw9QVolvN4sBuUJmlE8zmX8ua7gk5Df2dKvm",
+      "notes": "Gold-Chrome plated Hot Wheels car, highly reflective and glistening under spotlights."
+    },
+    {
+      "id": "4",
+      "name": "'56 Ford F-100",
+      "brand": "Hot Wheels",
+      "vehicleType": "Truck",
+      "scale": "1:64",
+      "condition": "Mint (M)",
+      "releaseYear": 1956,
+      "price": 85.50,
+      "rarityLevel": "Mainline",
+      "series": "HW Art Cars",
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBjiuvbpbRfs4vxBiLFlgEud4W6-0PyRIHiO574F7f9RnH4T6JZH_eCB2FTcZ3znHpMuEnBa8C-B5yEULD_VoqZq-K8Lcn4mYtRBRFaSqX8r_DTs7ay7H4EajhKvYIxmrcTojDOYr1WG-YRaIi4dpzbLgaICO52cRn-fKPe-hYud0h_eHQCba5QAB0_Ce-ntt0zRQdWk9xo-IALZ0vV2DcgN29D5MiYA1p9kiNVQ_pm1n8cHMlQ4h5R8gkiCMN2pXPLhu6hb8fIFhVr",
+      "notes": "Vintage 1950s pickup truck in teal blue patina finish, positioned on a rustic wooden plank."
+    },
+    {
+      "id": "5",
+      "name": "Nissan Skyline GT-R",
+      "brand": "Hot Wheels",
+      "vehicleType": "Exotic",
+      "scale": "1:64",
+      "condition": "Near Mint (NM)",
+      "releaseYear": 1999,
+      "price": 450.00,
+      "rarityLevel": "Chase",
+      "series": "J-Imports",
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAFpd56NW_8J1Tq6JuwlT_UI_o-2HXzNA5OSnsfyct9g647KJ3zw9oh2-5S_ephYXuNMR2ZjrbdC0fOALKbWRtetIErLUR3tkD7pVehbmYv4qMg8_15idtpagCYYcRI7t75g6IA9mhP1W1Ok-t4rfHOCAYBdjX_owqltgTtzHMAfAHLxs4c2jbau-h30uhSG9_8Cdryecv6_xH3n1tG2-0HrGJV9rP4UIZz_dxTC80fpcwlorr0wbUlB3KEoLhbnKzGYKABg_Ryu5gm",
+      "notes": "Custom JDM style Nissan Skyline GTR R34 in Bayside Blue. Evoking a night street racing vibe."
+    }
+  ],
+  "deals": [
+    {
+      "id": "d1",
+      "name": "'69 Dodge Charger",
+      "price": 12.00,
+      "originalPrice": 18.50,
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuALYI0_-QMe8qn-hCRXuTBeQiMe3ag6cj22xXRYHPBDFqWbFM4f8KY-7uRrNnuge4W6E-skEvkKHisOG9wdsFEeT-_o_ZXcIdw5RO4jJIqk1atajErB4fvIIvPtFMyvW1Qo8v-bvxLCo79VJGI3PL9D8LU7lJoS10msQLKMYsheuGu8DYWFeJkE2C4Gh4BL06hCJ_hKo3mboDMcwhSddex90xENWWDOgQDHRhqLRDd2EAQVqVeFUSrb5q4VK1XS5tNJ7VoaowUpEm5h",
+      "notes": "Blue 1960s muscle car with white racing stripes."
+    },
+    {
+      "id": "d2",
+      "name": "Lotus Evija",
+      "price": 8.50,
+      "originalPrice": 12.00,
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBXmL0cJxzhaZDlcoJv3S6Szf-xqhQJfGzRFjqHwr3gwvIHmK7dDKSnRMOYKbeCufXT9MdTg3B24z7z41BoK1XQeBefawVc1Zc929LLyZG9dikRcY2rT9MsqUnPQ65nNCbFU7MDpaxNJ-TqR3JM7HqtUaFJIPk-C76wm1VoFbKmIMZUjZ8PJo4yNY0aTrRfkOFTYCH7E6MuIIzolEBzHap4JCaFf0NIM1QbwEshV9Y8MAbso42KH0Wv5TAd4RNBK24uasCRoLZOgLcg",
+      "notes": "Sleek modern electric hypercar toy in lime green."
+    },
+    {
+      "id": "d3",
+      "name": "Deora II Custom",
+      "price": 35.00,
+      "originalPrice": 45.00,
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuA21cdG7VdDYl6YyIi7vJUuXkT3KoIrRoqqmQdcq6q0GaW32SpJP2jUh302uzhzVlnwKh4GqPj1_AyMMrjRzPfNsojcEyqQavjABWdIeKii7E0qSA6xHwt0WGONpb_AyzCj-D_DKAAKbaiVOVWx9JWD8OJ5N7phs11UZMwdi1gkIf6YyNN-deud1caeYLnZmZvRBzmII5sdgrPQJEMpuyVnMc_TUQ5HDyDql57OUqvbZ6cJWjuZwiLuy4mkhcAD3ie2LhOcoP7eLwI9",
+      "notes": "Classic 1930s style hot rod toy with exposed engine."
+    }
+  ],
+  "ticker": [
+    { "name": "'67 Camaro", "price": 240.50, "change": 2.1, "direction": "up" },
+    { "name": "Porsche 911 GT3", "price": 185.00, "change": -0.5, "direction": "down" },
+    { "name": "Twin Mill (Mint)", "price": 3400.00, "change": 8.4, "direction": "up" },
+    { "name": "Datsun 510 Wagon", "price": 890.00, "change": 0.0, "direction": "none" },
+    { "name": "Nissan Skyline R34", "price": 1100.00, "change": 1.2, "direction": "up" }
+  ],
+  "chartData": {
+    "1W": [80, 78, 85, 83, 89, 92, 95],
+    "1M": [80, 78, 85, 82, 80, 87, 85, 89, 93, 91, 95, 98],
+    "1Y": [50, 65, 58, 72, 70, 85, 80, 92, 88, 95, 102, 110, 120]
+  },
+  "stats": {
+    "totalCollectionValue": 42850.25,
+    "itemsInVault": 1428,
+    "setCompletePercent": 85,
+    "setCompleteName": "Set #2024-B"
+  }
+}
