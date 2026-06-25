@@ -11,6 +11,8 @@ import { LiveTicker } from './components/LiveTicker';
 import { HistoryModal } from './components/HistoryModal';
 import { CollectionGallery } from './components/CollectionGallery';
 import { CollectionAnalysis } from './components/CollectionAnalysis';
+import { MarketAds } from './components/MarketAds';
+import { CommunityBoard } from './components/CommunityBoard';
 import {
   fetchCollectibles,
   fetchDeals,
@@ -25,6 +27,24 @@ import type {
 } from './services/api';
 import type { MyCar } from './services/collection';
 import { getMyCollection, addMyCar, deleteMyCar } from './services/collection';
+
+// Shown as the hero "Premium Listing" whenever no specific item is selected.
+const DEFAULT_FEATURED: Collectible = {
+  id: 'default-porsche-gt3rs',
+  name: 'Porsche 911 GT3 RS',
+  brand: 'Hot Wheels',
+  vehicleType: 'Exotic',
+  scale: '1:64',
+  condition: 'Mint (M)',
+  releaseYear: 2023,
+  price: 1850.0,
+  rarityLevel: 'Super Treasure Hunt',
+  series: 'HW Premium Exotics',
+  image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop',
+  notes: 'Track-bred flat-six icon in GT Silver with the signature swan-neck rear wing. Premium Spectraflame finish, Real Rider tires. Serial #001/250.',
+  isFeatured: true,
+  demandScore: 99,
+};
 
 function App() {
   const [activeTab, setActiveTab] = useState('Marketplace');
@@ -134,6 +154,8 @@ function App() {
       setActiveMenu('My Collection');
     } else if (tab === 'Analytics') {
       setActiveMenu('Analytics');
+    } else if (tab === 'Community') {
+      setActiveMenu('Community');
     }
   };
 
@@ -161,6 +183,9 @@ function App() {
     }
     return matchesSearch;
   });
+
+  // Fall back to the default Porsche premium listing when nothing is selected.
+  const displayedFeatured = featuredItem || DEFAULT_FEATURED;
 
   return (
     <div className="h-screen flex flex-col bg-surface-dim text-on-surface select-none">
@@ -191,6 +216,8 @@ function App() {
           />
         ) : activeMenu === 'Analytics' ? (
           <CollectionAnalysis cars={myCollection} />
+        ) : activeMenu === 'Community' ? (
+          <CommunityBoard />
         ) : (
           <div className="h-full flex overflow-hidden">
 
@@ -228,16 +255,10 @@ function App() {
             
             {/* Hero Featured & Key Stats */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
-              {featuredItem ? (
-                <FeaturedCard 
-                  item={featuredItem} 
-                  onOpenHistory={() => setIsHistoryOpen(true)} 
-                />
-              ) : (
-                <div className="xl:col-span-2 glass-panel p-md rounded-xl h-48 flex items-center justify-center text-label-md text-on-surface-variant">
-                  No item selected.
-                </div>
-              )}
+              <FeaturedCard
+                item={displayedFeatured}
+                onOpenHistory={() => setIsHistoryOpen(true)}
+              />
               
               {/* Statistics Cluster */}
               <div className="space-y-md">
@@ -275,9 +296,12 @@ function App() {
               </div>
             </div>
             
+            {/* Advertised cars available in the market */}
+            <MarketAds items={collectibles} onSelect={setFeaturedItem} />
+
             {/* Market Chart & Gauge */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
-              <MarketChart 
+              <MarketChart
                 timeframe={timeframe}
                 setTimeframe={setTimeframe}
               />
@@ -309,13 +333,11 @@ function App() {
       <LiveTicker />
 
       {/* Pricing History Modal */}
-      {featuredItem && (
-        <HistoryModal 
-          item={featuredItem}
-          isOpen={isHistoryOpen}
-          onClose={() => setIsHistoryOpen(false)}
-        />
-      )}
+      <HistoryModal
+        item={displayedFeatured}
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
 
       {/* Rarity Guide Modal */}
       {isRarityGuideOpen && (
