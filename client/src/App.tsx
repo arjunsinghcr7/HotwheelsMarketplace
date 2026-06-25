@@ -9,6 +9,8 @@ import { MarketChart } from './components/MarketChart';
 import { RarityGauge } from './components/RarityGauge';
 import { LiveTicker } from './components/LiveTicker';
 import { HistoryModal } from './components/HistoryModal';
+import { CollectionGallery } from './components/CollectionGallery';
+import { CollectionAnalysis } from './components/CollectionAnalysis';
 import {
   fetchCollectibles,
   fetchDeals,
@@ -16,11 +18,13 @@ import {
   addCollectible,
   deleteCollectible
 } from './services/api';
-import type { 
-  Collectible, 
-  Deal, 
-  Stats 
+import type {
+  Collectible,
+  Deal,
+  Stats
 } from './services/api';
+import type { MyCar } from './services/collection';
+import { getMyCollection, addMyCar, deleteMyCar } from './services/collection';
 
 function App() {
   const [activeTab, setActiveTab] = useState('Marketplace');
@@ -32,6 +36,9 @@ function App() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [featuredItem, setFeaturedItem] = useState<Collectible | null>(null);
+
+  // User's personal collection (stored locally in the browser)
+  const [myCollection, setMyCollection] = useState<MyCar[]>([]);
   
   // Chart timeframe state
   const [timeframe, setTimeframe] = useState<'1W' | '1M' | '1Y'>('1M');
@@ -68,7 +75,16 @@ function App() {
 
   useEffect(() => {
     loadData();
+    setMyCollection(getMyCollection());
   }, []);
+
+  const handleAddMyCar = (car: Omit<MyCar, 'id'>) => {
+    setMyCollection(addMyCar(car));
+  };
+
+  const handleDeleteMyCar = (id: string) => {
+    setMyCollection(deleteMyCar(id));
+  };
 
   const handleAddCollectible = async (formData: {
     name: string;
@@ -116,6 +132,8 @@ function App() {
       setActiveMenu('Marketplace');
     } else if (tab === 'Collection') {
       setActiveMenu('My Collection');
+    } else if (tab === 'Analytics') {
+      setActiveMenu('Analytics');
     }
   };
 
@@ -125,6 +143,8 @@ function App() {
       setActiveTab('Marketplace');
     } else if (menu === 'My Collection') {
       setActiveTab('Collection');
+    } else if (menu === 'Analytics') {
+      setActiveTab('Analytics');
     }
   };
 
@@ -160,8 +180,20 @@ function App() {
         />
         
         {/* Main Workspace */}
-        <main className="flex-1 ml-0 xl:ml-64 flex overflow-hidden">
-          
+        <main className="flex-1 ml-0 xl:ml-64 overflow-hidden">
+
+        {activeMenu === 'My Collection' ? (
+          <CollectionGallery
+            cars={myCollection}
+            searchQuery={searchQuery}
+            onAdd={handleAddMyCar}
+            onDelete={handleDeleteMyCar}
+          />
+        ) : activeMenu === 'Analytics' ? (
+          <CollectionAnalysis cars={myCollection} />
+        ) : (
+          <div className="h-full flex overflow-hidden">
+
           {/* Mobile view switch bar (Visible on mobile/tablet to toggle Form vs Listings) */}
           <div className="lg:hidden fixed top-16 left-0 right-0 h-10 bg-surface-container border-b border-outline-variant z-30 flex">
             <button
@@ -266,8 +298,10 @@ function App() {
             
             {/* Deals Section */}
             <DealsSection deals={deals} />
-            
+
           </div>
+          </div>
+        )}
         </main>
       </div>
       
