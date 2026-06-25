@@ -5,7 +5,7 @@ import path from 'path';
 import os from 'os';
 // Bundled seed data. Used as the source of truth on read-only/serverless
 // filesystems (e.g. Vercel) and as a fallback if the writable DB file is missing.
-import seed from '../db.json' with { type: 'json' };
+import seed from './seed.js';
 
 // Database interface definition
 interface Collectible {
@@ -41,7 +41,7 @@ interface TickerItem {
   direction: 'up' | 'down' | 'none';
 }
 
-interface Database {
+export interface Database {
   collectibles: Collectible[];
   deals: Deal[];
   ticker: TickerItem[];
@@ -231,6 +231,17 @@ export function createApp() {
     } catch (error) {
       res.status(500).json({ error: 'Failed to read stats' });
     }
+  });
+
+  // Unknown route -> JSON 404 (so clients never try to parse an HTML/text body)
+  app.use((req: Request, res: Response) => {
+    res.status(404).json({ error: `Not found: ${req.method} ${req.path}` });
+  });
+
+  // Catch-all error handler -> always respond with JSON
+  app.use((err: Error, req: Request, res: Response, _next: express.NextFunction) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   });
 
   return app;
