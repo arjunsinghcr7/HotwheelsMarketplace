@@ -41,6 +41,7 @@ import {
 import { HomePage } from './components/HomePage';
 import { CartDrawer } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
+import { ProductDetailModal } from './components/ProductDetailModal';
 import { CATALOG } from './data/catalog';
 import { initTheme } from './services/theme';
 
@@ -88,6 +89,9 @@ function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [detailItem, setDetailItem] = useState<Collectible | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState<Collectible[]>([]);
 
   // Chart timeframe state
   const [timeframe, setTimeframe] = useState<'1W' | '1M' | '1Y'>('1M');
@@ -135,7 +139,28 @@ function App() {
     setMyCollection(getMyCollection());
     setWatchlist(getWatchlist());
     setCart(getCart());
+    try {
+      const r = JSON.parse(localStorage.getItem('hw_recent') || '[]');
+      if (Array.isArray(r)) setRecentlyViewed(r);
+    } catch {
+      // ignore corrupt storage
+    }
   }, []);
+
+  // Open the product details modal and record the view.
+  const handleOpenDetails = (item: Collectible) => {
+    setDetailItem(item);
+    setIsDetailOpen(true);
+    setRecentlyViewed((prev) => {
+      const next = [item, ...prev.filter((c) => c.id !== item.id)].slice(0, 10);
+      try {
+        localStorage.setItem('hw_recent', JSON.stringify(next));
+      } catch {
+        // ignore storage failures
+      }
+      return next;
+    });
+  };
 
   // Searching from the homepage jumps to the marketplace where results show.
   useEffect(() => {
@@ -375,7 +400,7 @@ function App() {
             collectibles={collectibles}
             isLoading={isLoading}
             wishlistNames={wishlistNames}
-            onSelect={(item) => { setFeaturedItem(item); handleSetTab('Marketplace'); }}
+            onSelect={handleOpenDetails}
             onShop={() => handleSetTab('Marketplace')}
             onExplore={() => handleSetTab('Marketplace')}
             onAddToCart={handleAddToCart}
@@ -494,10 +519,10 @@ function App() {
             <ShopSection
               items={filteredCollectibles}
               isLoading={isLoading}
-              selectedItem={featuredItem}
+              selectedItem={detailItem}
               wishlistNames={wishlistNames}
               searchQuery={searchQuery}
-              onSelectItem={setFeaturedItem}
+              onSelectItem={handleOpenDetails}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
               onDeleteCollectible={handleDeleteCollectible}
@@ -550,6 +575,19 @@ function App() {
         onClose={() => setIsWishlistOpen(false)}
         onMoveToCart={handleMoveToCart}
         onRemove={handleRemoveWatch}
+      />
+
+      {/* Product details */}
+      <ProductDetailModal
+        item={detailItem}
+        isOpen={isDetailOpen}
+        collectibles={collectibles}
+        recentlyViewed={recentlyViewed}
+        wishlistNames={wishlistNames}
+        onClose={() => setIsDetailOpen(false)}
+        onAddToCart={handleAddToCart}
+        onToggleWishlist={handleToggleWishlist}
+        onOpenDetails={handleOpenDetails}
       />
 
       {/* Toast notifications */}
