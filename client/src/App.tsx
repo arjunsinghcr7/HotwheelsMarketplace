@@ -203,6 +203,9 @@ function App() {
     }
   };
 
+  // Whether the user is actively searching (drives search-results UI + empty states)
+  const isSearching = searchQuery.trim() !== '';
+
   // Filter collectibles based on active view and search query
   const filteredCollectibles = collectibles.filter((item) => {
     const matchesSearch = 
@@ -308,8 +311,13 @@ function App() {
               </div>
             </div>
             
-            {/* Advertised cars available in the market */}
-            <MarketAds items={collectibles} onSelect={setFeaturedItem} />
+            {/* Advertised cars available in the market — reflects the search query */}
+            <MarketAds
+              items={isSearching ? filteredCollectibles : collectibles}
+              onSelect={setFeaturedItem}
+              searchActive={isSearching}
+              searchQuery={searchQuery}
+            />
 
             {/* Market Chart & Gauge */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
@@ -333,6 +341,7 @@ function App() {
               onSelectItem={setFeaturedItem}
               selectedItem={featuredItem}
               onDeleteCollectible={handleDeleteCollectible}
+              searchQuery={searchQuery}
             />
             
             {/* Deals Section */}

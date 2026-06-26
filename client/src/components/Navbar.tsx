@@ -60,17 +60,36 @@ export const Navbar: React.FC<NavbarProps> = ({
       
       <div className="flex items-center gap-md">
         <div className="relative hidden lg:block">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">
+          <button
+            type="button"
+            title="Search the vault"
+            onClick={() => document.getElementById('navbar-search')?.focus()}
+            className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-secondary text-sm p-0.5 rounded transition-colors cursor-pointer"
+          >
             search
-          </span>
+          </button>
           <input
             id="navbar-search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-surface-container-lowest border border-outline-variant rounded-lg pl-10 pr-4 py-2 w-64 focus:ring-1 focus:ring-secondary focus:border-secondary outline-none text-label-md transition-all text-on-surface placeholder:text-on-surface-variant/50"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.currentTarget.blur();
+              if (e.key === 'Escape') setSearchQuery('');
+            }}
+            className="bg-surface-container-lowest border border-outline-variant rounded-lg pl-10 pr-9 py-2 w-64 focus:ring-1 focus:ring-secondary focus:border-secondary outline-none text-label-md transition-all text-on-surface placeholder:text-on-surface-variant/50"
             placeholder="Search the vault..."
             type="text"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              title="Clear search"
+              onClick={() => setSearchQuery('')}
+              className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface text-sm p-0.5 rounded-full hover:bg-surface-container-high transition-colors"
+            >
+              close
+            </button>
+          )}
         </div>
         
         <div className="flex items-center gap-xs">

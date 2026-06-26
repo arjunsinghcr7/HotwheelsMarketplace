@@ -6,6 +6,7 @@ interface RecentListingsProps {
   onSelectItem: (item: Collectible) => void;
   selectedItem: Collectible | null;
   onDeleteCollectible: (id: string) => Promise<void>;
+  searchQuery?: string;
 }
 
 export const RecentListings: React.FC<RecentListingsProps> = ({
@@ -13,6 +14,7 @@ export const RecentListings: React.FC<RecentListingsProps> = ({
   onSelectItem,
   selectedItem,
   onDeleteCollectible,
+  searchQuery = '',
 }) => {
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
 
@@ -35,6 +37,17 @@ export const RecentListings: React.FC<RecentListingsProps> = ({
         </button>
       </div>
       
+      {items.length === 0 ? (
+        <div className="glass-panel rounded-xl flex flex-col items-center justify-center text-center py-2xl gap-sm">
+          <span className="material-symbols-outlined text-on-surface-variant/40 text-5xl">search_off</span>
+          <p className="text-label-lg font-bold text-on-surface">No results found</p>
+          <p className="text-label-sm text-on-surface-variant max-w-sm">
+            {searchQuery
+              ? <>We couldn't find any cars matching "<span className="text-on-surface font-medium">{searchQuery}</span>" in the marketplace. Try a different name, brand, or series.</>
+              : 'No marketplace listings yet. Add a car to get started.'}
+          </p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-md">
         {items.map((item) => {
           const isSth = item.rarityLevel === 'Super Treasure Hunt';
@@ -158,6 +171,7 @@ export const RecentListings: React.FC<RecentListingsProps> = ({
           );
         })}
       </div>
+      )}
     </div>
   );
 };

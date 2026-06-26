@@ -4,6 +4,10 @@ import type { Collectible } from '../services/api';
 interface MarketAdsProps {
   items: Collectible[];
   onSelect: (item: Collectible) => void;
+  // When the user is actively searching, suppress the demo fallback ads so an
+  // empty result reads as "no matches" rather than unrelated promos.
+  searchActive?: boolean;
+  searchQuery?: string;
 }
 
 // Fallback promos so the market always advertises something, even before the
@@ -33,16 +37,19 @@ const rarityColor = (level: string) => {
   return 'bg-surface-container-highest text-on-surface-variant';
 };
 
-export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect }) => {
-  // Promote up to 8 of the most valuable available cars (or fall back to demo ads).
-  const ads = (items.length > 0 ? [...items].sort((a, b) => b.price - a.price) : DEFAULT_ADS).slice(0, 8);
+export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect, searchActive = false, searchQuery = '' }) => {
+  // Promote up to 8 of the most valuable available cars. Fall back to demo ads
+  // only when NOT searching — during a search an empty list means "no matches".
+  const sorted = [...items].sort((a, b) => b.price - a.price);
+  const ads = (items.length > 0 ? sorted : searchActive ? [] : DEFAULT_ADS).slice(0, 8);
+  const noMatches = searchActive && ads.length === 0;
 
   return (
     <div className="glass-panel p-md rounded-xl">
       <div className="flex items-center justify-between mb-md">
         <h4 className="font-headline-md text-on-surface flex items-center gap-sm">
           <span className="material-symbols-outlined text-primary animate-pulse">local_fire_department</span>
-          Available in the Market
+          {searchActive ? 'Search Results' : 'Available in the Market'}
         </h4>
         <span className="text-label-sm text-on-surface-variant hidden sm:flex items-center gap-xs">
           <span className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_#4ade80]"></span>
@@ -50,6 +57,15 @@ export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect }) => {
         </span>
       </div>
 
+      {noMatches ? (
+        <div className="flex flex-col items-center justify-center text-center py-xl gap-sm">
+          <span className="material-symbols-outlined text-on-surface-variant/40 text-5xl">search_off</span>
+          <p className="text-label-lg font-bold text-on-surface">No results found</p>
+          <p className="text-label-sm text-on-surface-variant max-w-xs">
+            {searchQuery ? <>No cars matching "<span className="text-on-surface font-medium">{searchQuery}</span>" are listed in the marketplace right now.</> : 'No cars are listed in the marketplace right now.'}
+          </p>
+        </div>
+      ) : (
       <div className="flex gap-md overflow-x-auto pb-sm custom-scrollbar">
         {ads.map((car) => (
           <div
@@ -84,6 +100,7 @@ export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect }) => {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 };
