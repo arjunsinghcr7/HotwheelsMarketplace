@@ -31,6 +31,25 @@ export interface TickerItem {
   direction: 'up' | 'down' | 'none';
 }
 
+export interface CommunityReply {
+  author: string;
+  avatar: string;
+  text: string;
+  suggestedPrice?: number;
+  helpful: number;
+}
+
+export interface CommunityThread {
+  id: string;
+  author: string;
+  avatar: string;
+  car: string;
+  rarity: string;
+  question: string;
+  askedAgo: string;
+  replies: CommunityReply[];
+}
+
 export interface Stats {
   totalCollectionValue: number;
   itemsInVault: number;
@@ -86,6 +105,30 @@ export async function fetchChartData(timeframe: '1W' | '1M' | '1Y'): Promise<num
 export async function fetchStats(): Promise<Stats> {
   const res = await fetch(`${API_BASE}/stats`);
   if (!res.ok) throw new Error('Failed to fetch stats');
+  return res.json();
+}
+
+export async function fetchCommunityThreads(): Promise<CommunityThread[]> {
+  const res = await fetch(`${API_BASE}/community`);
+  if (!res.ok) throw new Error('Failed to fetch community threads');
+  return res.json();
+}
+
+export async function postCommunityThread(data: {
+  car: string;
+  question: string;
+  author?: string;
+  rarity?: string;
+}): Promise<CommunityThread> {
+  const res = await fetch(`${API_BASE}/community`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || 'Failed to post community thread');
+  }
   return res.json();
 }
 

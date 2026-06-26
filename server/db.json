@@ -316,6 +316,22 @@
       "originalPrice": 45.0,
       "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuA21cdG7VdDYl6YyIi7vJUuXkT3KoIrRoqqmQdcq6q0GaW32SpJP2jUh302uzhzVlnwKh4GqPj1_AyMMrjRzPfNsojcEyqQavjABWdIeKii7E0qSA6xHwt0WGONpb_AyzCj-D_DKAAKbaiVOVWx9JWD8OJ5N7phs11UZMwdi1gkIf6YyNN-deud1caeYLnZmZvRBzmII5sdgrPQJEMpuyVnMc_TUQ5HDyDql57OUqvbZ6cJWjuZwiLuy4mkhcAD3ie2LhOcoP7eLwI9",
       "notes": "Classic 1930s style hot rod toy with exposed engine."
+    },
+    {
+      "id": "d4",
+      "name": "Mazda RX-7 FD",
+      "price": 9.5,
+      "originalPrice": 15.0,
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAFpd56NW_8J1Tq6JuwlT_UI_o-2HXzNA5OSnsfyct9g647KJ3zw9oh2-5S_ephYXuNMR2ZjrbdC0fOALKbWRtetIErLUR3tkD7pVehbmYv4qMg8_15idtpagCYYcRI7t75g6IA9mhP1W1Ok-t4rfHOCAYBdjX_owqltgTtzHMAfAHLxs4c2jbau-h30uhSG9_8Cdryecv6_xH3n1tG2-0HrGJV9rP4UIZz_dxTC80fpcwlorr0wbUlB3KEoLhbnKzGYKABg_Ryu5gm",
+      "notes": "JDM rotary icon in competition yellow."
+    },
+    {
+      "id": "d5",
+      "name": "'70 Chevelle SS",
+      "price": 11.0,
+      "originalPrice": 16.5,
+      "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuCIkDdUAS5EKKUUyyrIkPEhe1KzIUPfVsmLNAZuLmbt2-Orgag94Sz7emH59UT3lmQwroTj4QjR7xPUo1vsrVllc-jtxSeRombd-7MlV84ya1Va1EjvvFb4BrSh23QyR2lpCBlN7lkuuWcXcD0nSRYQghONgjUJdBNv_Wz7cp7RYgGNyp3D70Jv-b_kFXAhD-EJAXub6bORsVcyz1hDUvSzNSx6prYKaJWhA5gVUUEgTm7iWGzqWA_WL5Q0tvDuOGvkQbJMfWdjRqjx",
+      "notes": "Muscle-era heavyweight in Cranberry red."
     }
   ],
   "ticker": [
@@ -413,5 +429,92 @@
     "itemsInVault": 1428,
     "setCompletePercent": 85,
     "setCompleteName": "Set #2024-B"
-  }
+  },
+  "community": [
+    {
+      "id": "t1",
+      "author": "DieCastDan",
+      "avatar": "https://i.pravatar.cc/80?u=dan",
+      "car": "'67 Custom Mustang (STH)",
+      "rarity": "Super Treasure Hunt",
+      "question": "Found a '67 Custom Mustang STH still on the card, serial #014/250. What's a fair asking price right now?",
+      "askedAgo": "12 min ago",
+      "replies": [
+        {
+          "author": "VaultKeeper",
+          "avatar": "https://i.pravatar.cc/80?u=vault",
+          "text": "Carded STH with a low serial is gold. Mint examples have been moving around $1.2k\u2013$1.3k lately.",
+          "suggestedPrice": 1250,
+          "helpful": 24
+        },
+        {
+          "author": "RedlineRita",
+          "avatar": "https://i.pravatar.cc/80?u=rita",
+          "text": "Agreed. If the blister is crease-free you can hold out for the higher end.",
+          "suggestedPrice": 1300,
+          "helpful": 11
+        }
+      ]
+    },
+    {
+      "id": "t2",
+      "author": "GarageGail",
+      "avatar": "https://i.pravatar.cc/80?u=gail",
+      "car": "Nissan Skyline GT-R (Chase)",
+      "rarity": "Chase",
+      "question": "How much is a loose R34 Skyline chase in Bayside Blue worth? Mine has light wheel rub.",
+      "askedAgo": "38 min ago",
+      "replies": [
+        {
+          "author": "JDM_Collector",
+          "avatar": "https://i.pravatar.cc/80?u=jdm",
+          "text": "Loose with wheel rub I'd price it ~$380\u2013$420. Carded mint is closer to $450+.",
+          "suggestedPrice": 400,
+          "helpful": 17
+        }
+      ]
+    },
+    {
+      "id": "t3",
+      "author": "NewToTheHunt",
+      "avatar": "https://i.pravatar.cc/80?u=newbie",
+      "car": "Lamborghini Centenario (STH)",
+      "rarity": "Super Treasure Hunt",
+      "question": "Is $1,100 too much to pay for a gold-chrome Centenario STH? First big purchase, want a sanity check \ud83d\ude4f",
+      "askedAgo": "1 hr ago",
+      "replies": [
+        {
+          "author": "VaultKeeper",
+          "avatar": "https://i.pravatar.cc/80?u=vault",
+          "text": "That's market rate for a clean one. Not overpaying \u2014 just confirm the Spectraflame has no rub.",
+          "suggestedPrice": 1100,
+          "helpful": 31
+        },
+        {
+          "author": "ChaseChaser",
+          "avatar": "https://i.pravatar.cc/80?u=chase",
+          "text": "Welcome to the hobby! Fair price. Buy the condition, not just the car.",
+          "helpful": 9
+        }
+      ]
+    },
+    {
+      "id": "t4",
+      "author": "PorscheHunter",
+      "avatar": "https://i.pravatar.cc/80?u=porsche",
+      "car": "Porsche 911 GT3 RS (STH)",
+      "rarity": "Super Treasure Hunt",
+      "question": "Just pulled a GT3 RS STH #001/250 in GT Silver! Holding or flipping \u2014 what are these going for carded?",
+      "askedAgo": "2 hr ago",
+      "replies": [
+        {
+          "author": "VaultKeeper",
+          "avatar": "https://i.pravatar.cc/80?u=vault",
+          "text": "A #001 serial carded is a grail. Clean ones have crossed $1.8k. Hold it.",
+          "suggestedPrice": 1850,
+          "helpful": 42
+        }
+      ]
+    }
+  ]
 }

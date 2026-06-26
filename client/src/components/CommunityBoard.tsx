@@ -1,26 +1,11 @@
-import React, { useState } from 'react';
-
-interface Reply {
-  author: string;
-  avatar: string;
-  text: string;
-  suggestedPrice?: number;
-  helpful: number;
-}
-
-interface Thread {
-  id: string;
-  author: string;
-  avatar: string;
-  car: string;
-  rarity: string;
-  question: string;
-  askedAgo: string;
-  replies: Reply[];
-}
+import React, { useEffect, useState } from 'react';
+import { fetchCommunityThreads, postCommunityThread } from '../services/api';
+import type { CommunityThread as Thread } from '../services/api';
 
 const AV = (seed: string) => `https://i.pravatar.cc/80?u=${seed}`;
 
+// Offline/loading fallback so the board always shows something even if the API
+// is unreachable (mirrors the seeded threads on the backend).
 const INITIAL_THREADS: Thread[] = [
   {
     id: 't1',
@@ -73,23 +58,53 @@ export const CommunityBoard: React.FC = () => {
   const [threads, setThreads] = useState<Thread[]>(INITIAL_THREADS);
   const [car, setCar] = useState('');
   const [question, setQuestion] = useState('');
+  const [isPosting, setIsPosting] = useState(false);
 
-  const handleAsk = (e: React.FormEvent) => {
+  // Load threads from the backend on mount (keep the seeded fallback on error).
+  useEffect(() => {
+    let cancelled = false;
+    fetchCommunityThreads()
+      .then((data) => {
+        if (!cancelled && Array.isArray(data) && data.length > 0) setThreads(data);
+      })
+      .catch((err) => console.error('Failed to load community threads', err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleAsk = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!car.trim() || !question.trim()) return;
-    const newThread: Thread = {
+    const carVal = car.trim();
+    const questionVal = question.trim();
+    if (!carVal || !questionVal || isPosting) return;
+
+    setIsPosting(true);
+    // Optimistic thread shown immediately; replaced by the server's copy on success.
+    const optimistic: Thread = {
       id: `t_${Date.now()}`,
       author: 'You',
       avatar: AV('you'),
-      car: car.trim(),
+      car: carVal,
       rarity: 'Mainline',
-      question: question.trim(),
+      question: questionVal,
       askedAgo: 'just now',
       replies: [],
     };
-    setThreads([newThread, ...threads]);
+    setThreads((prev) => [optimistic, ...prev]);
     setCar('');
     setQuestion('');
+
+    try {
+      const saved = await postCommunityThread({ car: carVal, question: questionVal });
+      // Swap the optimistic entry for the persisted one returned by the API.
+      setThreads((prev) => prev.map((t) => (t.id === optimistic.id ? saved : t)));
+    } catch (err) {
+      // Offline/unreachable — keep the optimistic thread so the user isn't blocked.
+      console.error('Failed to post community thread', err);
+    } finally {
+      setIsPosting(false);
+    }
   };
 
   return (
@@ -142,10 +157,13 @@ export const CommunityBoard: React.FC = () => {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="px-lg py-sm racing-gradient text-white font-headline-md rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform flex items-center gap-sm"
+            disabled={isPosting || !car.trim() || !question.trim()}
+            className="px-lg py-sm racing-gradient text-white font-headline-md rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform flex items-center gap-sm disabled:opacity-50 disabled:hover:scale-100"
           >
-            <span className="material-symbols-outlined">send</span>
-            Post Price Check
+            <span className={`material-symbols-outlined ${isPosting ? 'animate-spin' : ''}`}>
+              {isPosting ? 'progress_activity' : 'send'}
+            </span>
+            {isPosting ? 'Posting…' : 'Post Price Check'}
           </button>
         </div>
       </form>

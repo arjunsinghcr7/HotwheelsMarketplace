@@ -44,10 +44,30 @@ interface TickerItem {
   direction: 'up' | 'down' | 'none';
 }
 
+interface CommunityReply {
+  author: string;
+  avatar: string;
+  text: string;
+  suggestedPrice?: number;
+  helpful: number;
+}
+
+interface CommunityThread {
+  id: string;
+  author: string;
+  avatar: string;
+  car: string;
+  rarity: string;
+  question: string;
+  askedAgo: string;
+  replies: CommunityReply[];
+}
+
 export interface Database {
   collectibles: Collectible[];
   deals: Deal[];
   ticker: TickerItem[];
+  community: CommunityThread[];
   chartData: {
     '1W': number[];
     '1M': number[];
@@ -305,6 +325,48 @@ export function createApp() {
       res.json(db.stats);
     } catch (error) {
       res.status(500).json({ error: 'Failed to read stats' });
+    }
+  });
+
+  // Endpoint: GET /api/community — collector price-check threads
+  app.get('/api/community', async (req: Request, res: Response) => {
+    try {
+      const db = await readDB();
+      res.json(db.community || []);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to read community threads' });
+    }
+  });
+
+  // Endpoint: POST /api/community — post a new price-check question
+  app.post('/api/community', async (req: Request, res: Response) => {
+    try {
+      const { car, question, author, rarity } = req.body;
+      if (!car || !question) {
+        return res.status(400).json({ error: 'Missing required fields: car, question' });
+      }
+
+      const db = await readDB();
+      if (!db.community) db.community = [];
+
+      const cleanAuthor = (typeof author === 'string' && author.trim()) || 'You';
+      const newThread: CommunityThread = {
+        id: `t_${Date.now()}`,
+        author: cleanAuthor,
+        avatar: `https://i.pravatar.cc/80?u=${encodeURIComponent(cleanAuthor.toLowerCase())}`,
+        car: String(car).trim(),
+        rarity: (typeof rarity === 'string' && rarity.trim()) || 'Mainline',
+        question: String(question).trim(),
+        askedAgo: 'just now',
+        replies: [],
+      };
+
+      db.community.unshift(newThread);
+      await writeDB(db);
+      res.status(201).json(newThread);
+    } catch (error) {
+      console.error('Error posting community thread:', error);
+      res.status(500).json({ error: 'Failed to post community thread' });
     }
   });
 

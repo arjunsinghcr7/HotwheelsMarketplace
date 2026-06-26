@@ -77,18 +77,18 @@ export const AIAssistant: React.FC = () => {
 
   return (
     <>
-      {/* Floating launcher button — bottom left */}
+      {/* Floating launcher button — bottom right */}
       <button
         onClick={() => setIsOpen((v) => !v)}
         title="AI price assistant"
-        className="fixed bottom-4 left-4 z-50 w-14 h-14 rounded-full bg-secondary-container text-on-secondary-container shadow-2xl flex items-center justify-center hover:brightness-110 active:scale-95 transition-all border border-outline-variant"
+        className="fixed bottom-12 right-4 z-50 w-14 h-14 rounded-full bg-secondary-container text-on-secondary-container shadow-2xl flex items-center justify-center hover:brightness-110 active:scale-95 transition-all border border-outline-variant"
       >
         <span className="material-symbols-outlined text-2xl">{isOpen ? 'close' : 'smart_toy'}</span>
       </button>
 
       {/* Chat panel */}
       {isOpen && (
-        <div className="fixed bottom-24 left-4 z-50 w-[calc(100vw-2rem)] max-w-sm h-[32rem] max-h-[calc(100vh-8rem)] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-outline-variant bg-surface-container-low">
+        <div className="fixed bottom-28 right-4 z-50 w-[calc(100vw-2rem)] max-w-sm h-[32rem] max-h-[calc(100vh-8rem)] flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-outline-variant bg-surface-container-low">
           {/* Header */}
           <div className="p-md bg-surface-container-high border-b border-outline-variant flex items-center gap-sm">
             <span className="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
