@@ -27,7 +27,7 @@ export const FeaturedCard: React.FC<FeaturedCardProps> = ({ item, onOpenHistory 
         }`}>
           {isSth ? 'STH' : 'TH'}
         </span>
-        <span className="px-sm py-1 bg-surface-dim/80 backdrop-blur-md text-white text-label-sm rounded-full border border-white/20">
+        <span className="px-sm py-1 bg-black/50 backdrop-blur-md text-white text-label-sm rounded-full border border-white/20">
           #001/250
         </span>
       </div>

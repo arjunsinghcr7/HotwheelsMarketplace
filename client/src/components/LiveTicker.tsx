@@ -38,7 +38,7 @@ export const LiveTicker: React.FC = () => {
               ? 'text-green-400' 
               : isDown 
                 ? 'text-red-400' 
-                : 'text-white';
+                : 'text-on-surface';
             const arrow = isUp ? '▲' : isDown ? '▼' : '-';
             
             return (
@@ -59,7 +59,7 @@ export const LiveTicker: React.FC = () => {
               ? 'text-green-400' 
               : isDown 
                 ? 'text-red-400' 
-                : 'text-white';
+                : 'text-on-surface';
             const arrow = isUp ? '▲' : isDown ? '▼' : '-';
             
             return (

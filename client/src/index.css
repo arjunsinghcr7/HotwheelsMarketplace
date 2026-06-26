@@ -2,6 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme tokens (RGB triples). Dark is the default; .light flips them. */
+:root {
+  --c-surface-dim: 17 19 22;
+  --c-background: 17 19 22;
+  --c-surface: 17 19 22;
+  --c-surface-bright: 55 57 61;
+  --c-surface-container-high: 40 42 45;
+  --c-surface-container: 30 32 35;
+  --c-surface-container-highest: 51 53 56;
+  --c-surface-container-lowest: 12 14 17;
+  --c-surface-container-low: 26 28 31;
+  --c-surface-variant: 51 53 56;
+  --c-on-surface: 226 226 230;
+  --c-on-surface-variant: 196 199 207;
+  --c-outline: 141 145 153;
+  --c-outline-variant: 58 61 66;
+  --c-inverse-surface: 226 226 230;
+  --c-inverse-on-surface: 47 48 52;
+}
+
+html.light {
+  --c-surface-dim: 240 241 244;
+  --c-background: 252 252 255;
+  --c-surface: 252 252 255;
+  --c-surface-bright: 255 255 255;
+  --c-surface-container-high: 233 234 238;
+  --c-surface-container: 240 241 245;
+  --c-surface-container-highest: 226 227 231;
+  --c-surface-container-lowest: 255 255 255;
+  --c-surface-container-low: 246 246 249;
+  --c-surface-variant: 224 226 232;
+  --c-on-surface: 26 28 30;
+  --c-on-surface-variant: 64 67 74;
+  --c-outline: 116 119 127;
+  --c-outline-variant: 198 200 206;
+  --c-inverse-surface: 47 48 52;
+  --c-inverse-on-surface: 240 241 245;
+}
+
 @layer base {
   body {
     @apply bg-surface-dim text-on-surface font-body-md;
@@ -18,17 +57,22 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #111316;
+  background: rgb(var(--c-surface));
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #333538;
+  background: rgb(var(--c-surface-container-highest));
   border-radius: 10px;
 }
 

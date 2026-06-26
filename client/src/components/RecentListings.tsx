@@ -92,7 +92,7 @@ export const RecentListings: React.FC<RecentListingsProps> = ({
                   </span>
                 )}
                 
-                <span className="absolute bottom-2 right-2 px-2 py-1 bg-surface-dim/90 backdrop-blur text-white text-[10px] rounded font-bold border border-white/10">
+                <span className="absolute bottom-2 right-2 px-2 py-1 bg-black/70 backdrop-blur text-white text-[10px] rounded font-bold border border-white/10">
                   ${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>

@@ -107,7 +107,7 @@ export const CommunityBoard: React.FC = () => {
         </div>
         <div className="flex gap-md">
           <div className="glass-panel px-md py-sm rounded-xl text-center">
-            <p className="text-headline-md font-bold text-white flex items-center gap-xs justify-center">
+            <p className="text-headline-md font-bold text-on-surface flex items-center gap-xs justify-center">
               <span className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_#4ade80]"></span>
               2,143
             </p>

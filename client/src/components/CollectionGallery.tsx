@@ -104,7 +104,7 @@ export const CollectionGallery: React.FC<CollectionGalleryProps> = ({
         </div>
         <div className="glass-panel px-md py-sm rounded-xl text-right">
           <p className="text-label-sm text-on-surface-variant">Cars Owned</p>
-          <p className="text-headline-md font-bold text-white">
+          <p className="text-headline-md font-bold text-on-surface">
             {cars.length}
             <span className="text-label-sm text-on-surface-variant font-normal ml-2">
               · ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -248,7 +248,7 @@ export const CollectionGallery: React.FC<CollectionGalleryProps> = ({
                 >
                   <span className="material-symbols-outlined text-sm">delete</span>
                 </button>
-                <span className="absolute bottom-2 right-2 px-2 py-1 bg-surface-dim/90 backdrop-blur text-white text-[11px] rounded font-bold border border-white/10">
+                <span className="absolute bottom-2 right-2 px-2 py-1 bg-black/70 backdrop-blur text-white text-[11px] rounded font-bold border border-white/10">
                   ${car.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>

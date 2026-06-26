@@ -44,8 +44,8 @@ export const CollectionAnalysis: React.FC<CollectionAnalysisProps> = ({ cars }) 
 
   const stats = [
     { label: 'Total Collection Value', value: money(totalValue), icon: 'payments', accent: 'text-secondary' },
-    { label: 'Cars Owned', value: count.toString(), icon: 'directions_car', accent: 'text-white' },
-    { label: 'Average Value', value: money(avg), icon: 'functions', accent: 'text-white' },
+    { label: 'Cars Owned', value: count.toString(), icon: 'directions_car', accent: 'text-on-surface' },
+    { label: 'Average Value', value: money(avg), icon: 'functions', accent: 'text-on-surface' },
     { label: 'Most Valuable', value: money(maxPrice), icon: 'trophy', accent: 'text-tertiary' },
   ];
 

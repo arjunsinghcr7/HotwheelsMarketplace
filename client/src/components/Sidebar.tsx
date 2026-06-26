@@ -4,12 +4,14 @@ interface SidebarProps {
   activeMenu: string;
   setActiveMenu: (menu: string) => void;
   onOpenRarityGuide: () => void;
+  onOpenSettings: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeMenu,
   setActiveMenu,
   onOpenRarityGuide,
+  onOpenSettings,
 }) => {
   return (
     <aside className="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col p-md bg-surface-container-low border-r border-outline-variant z-40 hidden xl:flex">
@@ -75,8 +77,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <p className="text-[11px] text-on-surface-variant">Expert Tier Account</p>
         </div>
         
-        <button 
-          onClick={() => alert('Settings module is currently under development.')}
+        <button
+          onClick={onOpenSettings}
           className="flex items-center gap-sm p-sm w-full text-left text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest rounded-lg transition-all"
         >
           <span className="material-symbols-outlined text-lg">settings</span>

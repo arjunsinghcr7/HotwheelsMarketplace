@@ -43,6 +43,10 @@ export function deleteMyCar(id: string): MyCar[] {
   return cars;
 }
 
+export function clearMyCollection(): void {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 // ---- Watchlist (cars the user is tracking the price of) --------------------
 
 export interface WatchItem {
@@ -78,6 +82,10 @@ export function removeWatch(id: string): WatchItem[] {
   const list = getWatchlist().filter((w) => w.id !== id);
   localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list));
   return list;
+}
+
+export function clearWatchlist(): void {
+  localStorage.removeItem(WATCHLIST_KEY);
 }
 
 // Read an image File and return a downscaled JPEG data URL so large photos do

@@ -15,6 +15,7 @@ import { MarketAds } from './components/MarketAds';
 import { CommunityBoard } from './components/CommunityBoard';
 import { WatchlistCard } from './components/WatchlistCard';
 import { AIAssistant } from './components/AIAssistant';
+import { SettingsModal } from './components/SettingsModal';
 import type { CarFormData } from './components/VaultDiscoveryForm';
 import {
   fetchCollectibles,
@@ -30,9 +31,10 @@ import type {
 } from './services/api';
 import type { MyCar, WatchItem } from './services/collection';
 import {
-  getMyCollection, addMyCar, deleteMyCar,
-  getWatchlist, addWatch, removeWatch
+  getMyCollection, addMyCar, deleteMyCar, clearMyCollection,
+  getWatchlist, addWatch, removeWatch, clearWatchlist
 } from './services/collection';
+import { initTheme } from './services/theme';
 
 // Default images used for cars added without an uploaded photo.
 const STH_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTb2T8AcPKiNvWwjgdmpDF9zMLcpRoZmfuUZJAWwZnIWFFwrfp0EWmJoGPupIFS3aGdAZ-XXOFSxQ7ebaFVs8kvREsZxHGjsKZn5GLTBAU9ROjgn6JBuxMLrAp_3SnMegJZELKkT-x_21iVHoi-nyoEHQQpNFXEwdLKcncc8pKXKSoc7jZw7FXCXvIo-ee74mSRPG_OEzK1asa9FLPAwq7plDgpNojbnyRrHGyQG9Ljw9QVolvN4sBuUJmlE8zmX8ua7gk5Df2dKvm';
@@ -78,6 +80,7 @@ function App() {
   // Modal states
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isRarityGuideOpen, setIsRarityGuideOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Vault Discovery is now a slide-in drawer
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -105,10 +108,21 @@ function App() {
   };
 
   useEffect(() => {
+    initTheme();
     loadData();
     setMyCollection(getMyCollection());
     setWatchlist(getWatchlist());
   }, []);
+
+  const handleClearCollection = () => {
+    clearMyCollection();
+    setMyCollection([]);
+  };
+
+  const handleClearWatchlist = () => {
+    clearWatchlist();
+    setWatchlist([]);
+  };
 
   const handleAddMyCar = (car: Omit<MyCar, 'id'>) => {
     setMyCollection(addMyCar(car));
@@ -221,10 +235,11 @@ function App() {
       
       <div className="flex h-full pt-16 pb-8 overflow-hidden">
         {/* Sidebar Left */}
-        <Sidebar 
+        <Sidebar
           activeMenu={activeMenu}
           setActiveMenu={handleSetMenu}
           onOpenRarityGuide={() => setIsRarityGuideOpen(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
         />
         
         {/* Main Workspace */}
@@ -270,7 +285,7 @@ function App() {
                     <p className="text-label-sm text-on-surface-variant">Total Collection Value</p>
                     <span className="material-symbols-outlined text-secondary">payments</span>
                   </div>
-                  <p className="text-headline-lg font-bold text-white">
+                  <p className="text-headline-lg font-bold text-on-surface">
                     ${myTotalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                   <p className="text-label-sm text-on-surface-variant mt-1">
@@ -283,7 +298,7 @@ function App() {
                     <p className="text-label-sm text-on-surface-variant">Items in Vault</p>
                     <span className="material-symbols-outlined text-on-surface-variant">inventory_2</span>
                   </div>
-                  <p className="text-headline-lg font-bold text-white">
+                  <p className="text-headline-lg font-bold text-on-surface">
                     {myCount.toLocaleString('en-US')}
                   </p>
                   <p className="text-[11px] text-on-surface-variant mt-2">
@@ -353,6 +368,16 @@ function App() {
       {/* Floating AI price assistant (bottom-left) */}
       <AIAssistant />
 
+      {/* Settings */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        collectionCount={myCollection.length}
+        watchlistCount={watchlist.length}
+        onClearCollection={handleClearCollection}
+        onClearWatchlist={handleClearWatchlist}
+      />
+
       {/* Pricing History Modal */}
       <HistoryModal
         item={displayedFeatured}
@@ -377,7 +402,7 @@ function App() {
             </div>
             <div className="p-md space-y-md text-label-sm text-on-surface-variant">
               <div className="p-sm bg-surface-container rounded-lg border border-outline-variant">
-                <p className="font-bold text-white mb-1 flex items-center gap-xs">
+                <p className="font-bold text-on-surface mb-1 flex items-center gap-xs">
                   <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block"></span> Mainline
                 </p>
                 <p>Standard retail releases, high production volume. These form the baseline (60%) of a healthy collection.</p>

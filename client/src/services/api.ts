@@ -41,6 +41,8 @@ export interface Stats {
 // Same-origin in production (Vercel serves the API under /api). In local dev the
 // Vite proxy (see vite.config.ts) forwards /api to the Express server on :5001.
 // Override with VITE_API_URL when pointing at a separately hosted backend.
+import { localAssistantReply } from './assistantFallback';
+
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export async function fetchCollectibles(): Promise<Collectible[]> {
@@ -94,20 +96,24 @@ export interface AssistantMessage {
 
 // Ask the AI pricing/condition agent. Optionally include an image (data URL)
 // for the latest user turn so it can assess condition from a photo.
+// Never throws — if the backend is unreachable or errors, it returns a
+// locally-computed offline estimate so the assistant always replies.
 export async function askAssistant(
   messages: AssistantMessage[],
   imageDataUrl?: string
 ): Promise<{ reply: string; source: 'ai' | 'offline' }> {
-  const res = await fetch(`${API_BASE}/assistant`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, imageDataUrl }),
-  });
-  if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    throw new Error(errData.error || 'The assistant is unavailable right now.');
+  const lastUserText = [...messages].reverse().find((m) => m.role === 'user')?.text || '';
+  try {
+    const res = await fetch(`${API_BASE}/assistant`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, imageDataUrl }),
+    });
+    if (!res.ok) throw new Error('bad status');
+    return await res.json();
+  } catch {
+    return { reply: localAssistantReply(lastUserText, !!imageDataUrl), source: 'offline' };
   }
-  return res.json();
 }
 
 export async function deleteCollectible(id: string): Promise<{ message: string; id: string }> {
