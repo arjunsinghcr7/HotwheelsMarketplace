@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from '../utils/toast';
 
 interface SidebarProps {
   activeMenu: string;
@@ -86,7 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
         
         <button 
-          onClick={() => alert('Support ticket system opening...')}
+          onClick={() => toast('Support is on the way — our team will reach out shortly.', 'info')}
           className="flex items-center gap-sm p-sm w-full text-left text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest rounded-lg transition-all"
         >
           <span className="material-symbols-outlined text-lg">help_outline</span>

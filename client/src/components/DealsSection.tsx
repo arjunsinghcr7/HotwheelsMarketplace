@@ -4,9 +4,10 @@ import type { Deal } from '../services/api';
 
 interface DealsSectionProps {
   deals: Deal[];
+  onBuy?: (deal: Deal) => void;
 }
 
-export const DealsSection: React.FC<DealsSectionProps> = ({ deals }) => {
+export const DealsSection: React.FC<DealsSectionProps> = ({ deals, onBuy }) => {
   return (
     <div className="glass-panel p-md rounded-xl">
       <div className="flex items-center gap-sm mb-md">
@@ -18,8 +19,11 @@ export const DealsSection: React.FC<DealsSectionProps> = ({ deals }) => {
         {deals.map((deal) => (
           <div
             key={deal.id}
-            onClick={() => alert(`Purchasing ${deal.name} deal!`)}
-            className="flex-shrink-0 w-64 p-sm bg-surface-container rounded-lg border border-outline-variant flex gap-sm items-center hover:bg-surface-container-high transition-colors cursor-pointer"
+            onClick={() => onBuy?.(deal)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onBuy?.(deal); } }}
+            className="card-lift flex-shrink-0 w-64 p-sm bg-surface-container rounded-lg border border-outline-variant flex gap-sm items-center hover:border-secondary transition-colors cursor-pointer"
           >
             <div className="w-16 h-16 rounded bg-surface-dim overflow-hidden flex-shrink-0">
               <img

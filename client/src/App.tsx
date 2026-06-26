@@ -241,6 +241,21 @@ function App() {
     toast(`${item.name} added to cart`, 'success');
   };
 
+  // Add a promo deal to the cart.
+  const handleBuyDeal = (deal: Deal) => {
+    setCart(
+      addToCart({
+        id: deal.id,
+        name: deal.name,
+        brand: 'Hot Wheels',
+        price: deal.price,
+        image: deal.image,
+        rarityLevel: 'Mainline',
+      })
+    );
+    toast(`${deal.name} added to cart`, 'success');
+  };
+
   // Cart drawer open/close + line-item mutations.
   const handleOpenCart = () => setIsCartOpen(true);
   const handleCartQty = (id: string, qty: number) => setCart(setCartQty(id, qty));
@@ -494,7 +509,7 @@ function App() {
             {/* Advertised cars available in the market — reflects the search query */}
             <MarketAds
               items={isSearching ? filteredCollectibles : collectibles}
-              onSelect={setFeaturedItem}
+              onSelect={handleOpenDetails}
               searchActive={isSearching}
               searchQuery={searchQuery}
             />
@@ -530,7 +545,7 @@ function App() {
             />
             
             {/* Deals Section */}
-            <DealsSection deals={deals} />
+            <DealsSection deals={deals} onBuy={handleBuyDeal} />
 
           </div>
 
