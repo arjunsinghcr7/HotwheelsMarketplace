@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Collectible } from '../services/api';
 
 interface MarketAdsProps {
@@ -11,26 +11,17 @@ interface MarketAdsProps {
 }
 
 // Fallback promos so the market always advertises something, even before the
-// API data loads. Mirrors the top of the live catalog (server/db.json).
-const IMG = {
-  red: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCIkDdUAS5EKKUUyyrIkPEhe1KzIUPfVsmLNAZuLmbt2-Orgag94Sz7emH59UT3lmQwroTj4QjR7xPUo1vsrVllc-jtxSeRombd-7MlV84ya1Va1EjvvFb4BrSh23QyR2lpCBlN7lkuuWcXcD0nSRYQghONgjUJdBNv_Wz7cp7RYgGNyp3D70Jv-b_kFXAhD-EJAXub6bORsVcyz1hDUvSzNSx6prYKaJWhA5gVUUEgTm7iWGzqWA_WL5Q0tvDuOGvkQbJMfWdjRqjx',
-  orange: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCAjh6jyreGcOpuQAa9epE6zgxjUH4EfAj3etQwtv9LmW_2C4C4R33WoqYzCiXk0jrXSHWAhgc9vZQVlqUreyVVSem4CAOU7S7gpVwYsHuY3U2mTX8rc9T-o8o-kLsotwy1apmQnwt3BHOvWiOx65Gmc55F7w2TmWuyel5JokjJLd1cstF9vknPt7pLJJALbOZYWQFYV1j9LwbpDVhS5oEFaIgI3KhcKqG2837zSRkQCzPl90VFQFCa0FNd5u53G1TL1j8Lin_MUay4',
-  gold: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTb2T8AcPKiNvWwjgdmpDF9zMLcpRoZmfuUZJAWwZnIWFFwrfp0EWmJoGPupIFS3aGdAZ-XXOFSxQ7ebaFVs8kvREsZxHGjsKZn5GLTBAU9ROjgn6JBuxMLrAp_3SnMegJZELKkT-x_21iVHoi-nyoEHQQpNFXEwdLKcncc8pKXKSoc7jZw7FXCXvIo-ee74mSRPG_OEzK1asa9FLPAwq7plDgpNojbnyRrHGyQG9Ljw9QVolvN4sBuUJmlE8zmX8ua7gk5Df2dKvm',
-  blue: 'https://lh3.googleusercontent.com/aida-public/AB6AXuALYI0_-QMe8qn-hCRXuTBeQiMe3ag6cj22xXRYHPBDFqWbFM4f8KY-7uRrNnuge4W6E-skEvkKHisOG9wdsFEeT-_o_ZXcIdw5RO4jJIqk1atajErB4fvIIvPtFMyvW1Qo8v-bvxLCo79VJGI3PL9D8LU7lJoS10msQLKMYsheuGu8DYWFeJkE2C4Gh4BL06hCJ_hKo3mboDMcwhSddex90xENWWDOgQDHRhqLRDd2EAQVqVeFUSrb5q4VK1XS5tNJ7VoaowUpEm5h',
-  teal: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBjiuvbpbRfs4vxBiLFlgEud4W6-0PyRIHiO574F7f9RnH4T6JZH_eCB2FTcZ3znHpMuEnBa8C-B5yEULD_VoqZq-K8Lcn4mYtRBRFaSqX8r_DTs7ay7H4EajhKvYIxmrcTojDOYr1WG-YRaIi4dpzbLgaICO52cRn-fKPe-hYud0h_eHQCba5QAB0_Ce-ntt0zRQdWk9xo-IALZ0vV2DcgN29D5MiYA1p9kiNVQ_pm1n8cHMlQ4h5R8gkiCMN2pXPLhu6hb8fIFhVr',
-  lime: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBXmL0cJxzhaZDlcoJv3S6Szf-xqhQJfGzRFjqHwr3gwvIHmK7dDKSnRMOYKbeCufXT9MdTg3B24z7z41BoK1XQeBefawVc1Zc929LLyZG9dikRcY2rT9MsqUnPQ65nNCbFU7MDpaxNJ-TqR3JM7HqtUaFJIPk-C76wm1VoFbKmIMZUjZ8PJo4yNY0aTrRfkOFTYCH7E6MuIIzolEBzHap4JCaFf0NIM1QbwEshV9Y8MAbso42KH0Wv5TAd4RNBK24uasCRoLZOgLcg',
-  silver: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop',
-};
-
+// API data loads. Mirrors the top of the live catalog (server/db.json) and uses
+// the same cropped car art served from /public/cars.
 const DEFAULT_ADS: Collectible[] = [
-  { id: 'ad-1', name: 'Aston Martin Valkyrie', brand: 'Aston Martin', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2022, price: 1299, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: IMG.lime },
-  { id: 'ad-2', name: 'Bugatti Chiron', brand: 'Bugatti', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2022, price: 1199, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: IMG.blue },
-  { id: 'ad-3', name: 'Koenigsegg Jesko', brand: 'Koenigsegg', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2023, price: 1199, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: IMG.teal },
-  { id: 'ad-4', name: 'Lamborghini Aventador SVJ', brand: 'Lamborghini', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2021, price: 1099, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: IMG.lime },
-  { id: 'ad-5', name: 'McLaren P1', brand: 'McLaren', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2015, price: 1099, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: IMG.orange },
-  { id: 'ad-6', name: 'Ferrari F40', brand: 'Ferrari', vehicleType: 'Classic Supercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 1987, price: 999, rarityLevel: 'Super Treasure Hunt', series: 'HW Exotics', image: IMG.red },
-  { id: 'ad-7', name: 'Porsche 911 GT3 RS', brand: 'Porsche', vehicleType: 'Supercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2023, price: 899, rarityLevel: 'Super Treasure Hunt', series: 'HW Exotics', image: IMG.silver },
-  { id: 'ad-8', name: 'Nissan Skyline GT-R R34', brand: 'Nissan', vehicleType: 'JDM', scale: '1:64', condition: 'Mint (M)', releaseYear: 1999, price: 799, rarityLevel: 'Treasure Hunt', series: 'HW J-Imports', image: IMG.blue },
+  { id: 'ad-1', name: 'Aston Martin Valkyrie', brand: 'Aston Martin', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2022, price: 1299, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/19-aston-martin-valkyrie.jpg' },
+  { id: 'ad-2', name: 'Bugatti Chiron', brand: 'Bugatti', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2022, price: 1199, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/10-bugatti-chiron.jpg' },
+  { id: 'ad-3', name: 'Koenigsegg Jesko', brand: 'Koenigsegg', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2023, price: 1199, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/11-koenigsegg-jesko.jpg' },
+  { id: 'ad-4', name: 'Lamborghini Aventador SVJ', brand: 'Lamborghini', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2021, price: 1099, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/08-lamborghini-aventador-svj.jpg' },
+  { id: 'ad-5', name: 'McLaren P1', brand: 'McLaren', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2015, price: 1099, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/09-mclaren-p1.jpg' },
+  { id: 'ad-6', name: 'Ferrari F40', brand: 'Ferrari', vehicleType: 'Classic Supercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 1987, price: 999, rarityLevel: 'Super Treasure Hunt', series: 'HW Exotics', image: '/cars/07-ferrari-f40.jpg' },
+  { id: 'ad-7', name: 'Porsche 911 GT3 RS', brand: 'Porsche', vehicleType: 'Supercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2023, price: 899, rarityLevel: 'Super Treasure Hunt', series: 'HW Exotics', image: '/cars/06-porsche-911-gt3-rs.jpg' },
+  { id: 'ad-8', name: 'Nissan Skyline GT-R R34', brand: 'Nissan', vehicleType: 'JDM', scale: '1:64', condition: 'Mint (M)', releaseYear: 1999, price: 799, rarityLevel: 'Treasure Hunt', series: 'HW J-Imports', image: '/cars/01-nissan-skyline-gtr-r34.jpg' },
 ];
 
 const rarityColor = (level: string) => {
@@ -46,6 +37,32 @@ export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect, searchAct
   const sorted = [...items].sort((a, b) => b.price - a.price);
   const ads = (items.length > 0 ? sorted : searchActive ? [] : DEFAULT_ADS).slice(0, 8);
   const noMatches = searchActive && ads.length === 0;
+
+  // Horizontal scroll controls — arrows appear only in the direction you can go.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+
+  const updateArrows = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 4);
+    setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  };
+
+  useEffect(() => {
+    updateArrows();
+    const el = scrollRef.current;
+    if (!el) return;
+    window.addEventListener('resize', updateArrows);
+    return () => window.removeEventListener('resize', updateArrows);
+  }, [ads.length, noMatches]);
+
+  const scrollByDir = (dir: 1 | -1) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
+  };
 
   return (
     <div className="glass-panel p-md rounded-xl">
@@ -69,7 +86,30 @@ export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect, searchAct
           </p>
         </div>
       ) : (
-      <div className="flex gap-md overflow-x-auto pb-sm custom-scrollbar">
+      <div className="relative">
+        {/* Left scroll arrow — only when there's content to the left */}
+        {canLeft && (
+          <button
+            type="button"
+            aria-label="Scroll left"
+            onClick={() => scrollByDir(-1)}
+            className="absolute left-1 top-[4.25rem] -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-container-highest/90 backdrop-blur border border-outline-variant text-on-surface shadow-lg flex items-center justify-center hover:bg-surface-container-high hover:border-secondary active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined">chevron_left</span>
+          </button>
+        )}
+        {/* Right scroll arrow — only when there's more to the right */}
+        {canRight && (
+          <button
+            type="button"
+            aria-label="Scroll right"
+            onClick={() => scrollByDir(1)}
+            className="absolute right-1 top-[4.25rem] -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-container-highest/90 backdrop-blur border border-outline-variant text-on-surface shadow-lg flex items-center justify-center hover:bg-surface-container-high hover:border-secondary active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined">chevron_right</span>
+          </button>
+        )}
+        <div ref={scrollRef} onScroll={updateArrows} className="flex gap-md overflow-x-auto pb-sm custom-scrollbar">
         {ads.map((car) => (
           <div
             key={car.id}
@@ -102,6 +142,7 @@ export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect, searchAct
             </div>
           </div>
         ))}
+        </div>
       </div>
       )}
     </div>

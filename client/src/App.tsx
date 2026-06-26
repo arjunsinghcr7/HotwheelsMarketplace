@@ -53,7 +53,7 @@ const DEFAULT_FEATURED: Collectible = {
   price: 1850.0,
   rarityLevel: 'Super Treasure Hunt',
   series: 'HW Premium Exotics',
-  image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop',
+  image: '/cars/06-porsche-911-gt3-rs.jpg',
   notes: 'Track-bred flat-six icon in GT Silver with the signature swan-neck rear wing. Premium Spectraflame finish, Real Rider tires. Serial #001/250.',
   isFeatured: true,
   demandScore: 99,
@@ -82,8 +82,14 @@ function App() {
   const [isRarityGuideOpen, setIsRarityGuideOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Vault Discovery is now a slide-in drawer
+  // Vault Discovery is now a slide-in drawer; the launcher remembers which
+  // action (Buy / Sell / Track) the user intends so the form can highlight it.
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formAction, setFormAction] = useState<'buy' | 'sell' | 'track'>('buy');
+  const openForm = (action: 'buy' | 'sell' | 'track') => {
+    setFormAction(action);
+    setIsFormOpen(true);
+  };
 
   // Load database items on start
   const loadData = async () => {
@@ -262,14 +268,33 @@ function App() {
         ) : (
           <div className="h-full relative overflow-hidden">
 
-          {/* Left-side button that opens the Vault Discovery slide-in */}
-          <button
-            onClick={() => setIsFormOpen(true)}
-            className="fixed bottom-24 left-4 xl:left-[17rem] z-30 flex items-center gap-2 pl-3 pr-4 py-3 rounded-full bg-surface-container-high text-on-surface border border-outline-variant shadow-xl hover:border-secondary active:scale-95 transition-all"
-          >
-            <span className="material-symbols-outlined">add</span>
-            <span className="text-label-md font-bold">Add a Car</span>
-          </button>
+          {/* Left-side Buy / Sell / Track launchers that open the Vault Discovery slide-in */}
+          <div className="fixed bottom-24 left-4 xl:left-[17rem] z-30 flex items-center gap-2">
+            <button
+              onClick={() => openForm('buy')}
+              title="Buy — add a car to your collection"
+              className="flex items-center gap-1.5 pl-3 pr-4 py-3 rounded-full racing-gradient text-white font-bold shadow-xl hover:scale-[1.03] active:scale-95 transition-transform"
+            >
+              <span className="material-symbols-outlined">shopping_cart</span>
+              <span className="text-label-md">Buy</span>
+            </button>
+            <button
+              onClick={() => openForm('sell')}
+              title="Sell — list a car on the marketplace"
+              className="flex items-center gap-1.5 pl-3 pr-4 py-3 rounded-full bg-surface-container-high text-secondary border border-secondary font-bold shadow-xl hover:bg-secondary/10 active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined">sell</span>
+              <span className="text-label-md">Sell</span>
+            </button>
+            <button
+              onClick={() => openForm('track')}
+              title="Track — add a car to your watchlist"
+              className="flex items-center gap-1.5 pl-3 pr-4 py-3 rounded-full bg-surface-container-high text-tertiary border border-tertiary font-bold shadow-xl hover:bg-tertiary/10 active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined">visibility</span>
+              <span className="text-label-md">Track</span>
+            </button>
+          </div>
 
           {/* Main content (full width) */}
           <div className="h-full bg-background overflow-y-auto custom-scrollbar p-sm lg:p-lg flex flex-col gap-lg">
@@ -358,6 +383,7 @@ function App() {
               ></div>
               <div className="absolute inset-y-0 left-0 w-full max-w-md shadow-2xl animate-slide-in-left">
                 <VaultDiscoveryForm
+                  initialAction={formAction}
                   onBuy={handleBuyCar}
                   onSell={handleSellCar}
                   onTrack={handleTrackCar}

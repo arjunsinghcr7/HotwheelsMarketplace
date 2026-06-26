@@ -19,9 +19,11 @@ interface VaultDiscoveryFormProps {
   onSell: (data: CarFormData) => Promise<void> | void;
   onTrack: (data: CarFormData) => Promise<void> | void;
   onClose?: () => void;
+  // Which action the user picked on the launcher — highlighted as the intent.
+  initialAction?: Action;
 }
 
-export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onBuy, onSell, onTrack, onClose }) => {
+export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onBuy, onSell, onTrack, onClose, initialAction }) => {
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('Hot Wheels');
   const [vehicleType, setVehicleType] = useState('Muscle');
@@ -296,7 +298,7 @@ export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onBuy, o
             type="submit"
             disabled={!!activeAction}
             title="Add this car to your collection"
-            className="flex flex-col items-center justify-center gap-1 py-sm racing-gradient text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+            className={`flex flex-col items-center justify-center gap-1 py-sm racing-gradient text-white font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100 ${initialAction === 'buy' ? 'ring-2 ring-white/80 ring-offset-2 ring-offset-surface-container-lowest' : ''}`}
           >
             <span className="material-symbols-outlined">shopping_cart</span>
             <span className="text-label-sm">{activeAction === 'buy' ? 'Buying…' : 'Buy'}</span>
@@ -308,7 +310,7 @@ export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onBuy, o
             onClick={() => handleAction('sell')}
             disabled={!!activeAction}
             title="List this car on the marketplace"
-            className="flex flex-col items-center justify-center gap-1 py-sm bg-surface-container border border-secondary text-secondary font-bold rounded-xl hover:bg-secondary/10 active:scale-95 transition-all disabled:opacity-50"
+            className={`flex flex-col items-center justify-center gap-1 py-sm bg-surface-container border border-secondary text-secondary font-bold rounded-xl hover:bg-secondary/10 active:scale-95 transition-all disabled:opacity-50 ${initialAction === 'sell' ? 'ring-2 ring-secondary ring-offset-2 ring-offset-surface-container-lowest' : ''}`}
           >
             <span className="material-symbols-outlined">sell</span>
             <span className="text-label-sm">{activeAction === 'sell' ? 'Listing…' : 'Sell'}</span>
@@ -320,7 +322,7 @@ export const VaultDiscoveryForm: React.FC<VaultDiscoveryFormProps> = ({ onBuy, o
             onClick={() => handleAction('track')}
             disabled={!!activeAction}
             title="Track this car's price"
-            className="flex flex-col items-center justify-center gap-1 py-sm bg-surface-container border border-tertiary text-tertiary font-bold rounded-xl hover:bg-tertiary/10 active:scale-95 transition-all disabled:opacity-50"
+            className={`flex flex-col items-center justify-center gap-1 py-sm bg-surface-container border border-tertiary text-tertiary font-bold rounded-xl hover:bg-tertiary/10 active:scale-95 transition-all disabled:opacity-50 ${initialAction === 'track' ? 'ring-2 ring-tertiary ring-offset-2 ring-offset-surface-container-lowest' : ''}`}
           >
             <span className="material-symbols-outlined">visibility</span>
             <span className="text-label-sm">{activeAction === 'track' ? 'Tracking…' : 'Track'}</span>
