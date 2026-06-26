@@ -51,7 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               src="/logo.png"
               alt="HotWheels Paradise"
               onError={() => setLogoOk(false)}
-              className="h-11 w-auto object-contain"
+              className="h-12 w-auto object-contain"
             />
           ) : (
             <span className="text-headline-md font-headline-md font-bold text-primary tracking-tighter cursor-pointer">
