@@ -36,9 +36,11 @@ import type { MyCar, WatchItem, CartItem } from './services/collection';
 import {
   getMyCollection, addMyCar, deleteMyCar, clearMyCollection,
   getWatchlist, addWatch, removeWatch, clearWatchlist,
-  addToCart, toggleWatch, getCart
+  addToCart, toggleWatch, getCart, setCartQty, removeFromCart, clearCart
 } from './services/collection';
 import { HomePage } from './components/HomePage';
+import { CartDrawer } from './components/CartDrawer';
+import { WishlistDrawer } from './components/WishlistDrawer';
 import { initTheme } from './services/theme';
 
 // Default images used for cars added without an uploaded photo.
@@ -80,6 +82,8 @@ function App() {
   const [myCollection, setMyCollection] = useState<MyCar[]>([]);
   const [watchlist, setWatchlist] = useState<WatchItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
   // Chart timeframe state
   const [timeframe, setTimeframe] = useState<'1W' | '1M' | '1Y'>('1M');
@@ -209,21 +213,35 @@ function App() {
     toast(`${item.name} added to cart`, 'success');
   };
 
-  // Navbar cart icon — full slide-in cart drawer arrives in the next phase.
-  const handleOpenCart = () => {
-    const count = cart.reduce((n, c) => n + c.qty, 0);
-    toast(count > 0 ? `${count} item${count === 1 ? '' : 's'} in your cart` : 'Your cart is empty', 'info');
+  // Cart drawer open/close + line-item mutations.
+  const handleOpenCart = () => setIsCartOpen(true);
+  const handleCartQty = (id: string, qty: number) => setCart(setCartQty(id, qty));
+  const handleCartRemove = (id: string) => {
+    setCart(removeFromCart(id));
+    toast('Removed from cart', 'info');
+  };
+  const handlePlaceOrder = () => {
+    clearCart();
+    setCart([]);
+    toast('Order placed — thank you!', 'success');
   };
 
-  // Navbar wishlist icon — show the watchlist (lives on the marketplace view).
-  const handleOpenWishlist = () => {
-    if (watchlist.length === 0) {
-      toast('Your wishlist is empty', 'info');
-      return;
-    }
-    setActiveTab('Marketplace');
-    setActiveMenu('Marketplace');
-    toast(`${watchlist.length} saved item${watchlist.length === 1 ? '' : 's'}`, 'info');
+  // Wishlist drawer + "move to cart".
+  const handleOpenWishlist = () => setIsWishlistOpen(true);
+  const handleMoveToCart = (item: WatchItem) => {
+    const match = collectibles.find((c) => c.name === item.name);
+    setCart(
+      addToCart({
+        id: match?.id ?? `w-${item.id}`,
+        name: item.name,
+        brand: item.brand,
+        price: item.price,
+        image: match?.image ?? pickImage(item.rarityLevel),
+        rarityLevel: item.rarityLevel,
+      })
+    );
+    setWatchlist(removeWatch(item.id));
+    toast(`${item.name} moved to cart`, 'success');
   };
 
   // Navbar "New Arrivals / Limited Editions / About / Contact" — scroll to the
@@ -509,6 +527,23 @@ function App() {
       
       {/* Bottom Live Market Ticker */}
       <LiveTicker />
+
+      {/* Cart & Wishlist slide-in drawers */}
+      <CartDrawer
+        isOpen={isCartOpen}
+        items={cart}
+        onClose={() => setIsCartOpen(false)}
+        onQtyChange={handleCartQty}
+        onRemove={handleCartRemove}
+        onPlaceOrder={handlePlaceOrder}
+      />
+      <WishlistDrawer
+        isOpen={isWishlistOpen}
+        items={watchlist}
+        onClose={() => setIsWishlistOpen(false)}
+        onMoveToCart={handleMoveToCart}
+        onRemove={handleRemoveWatch}
+      />
 
       {/* Toast notifications */}
       <Toaster />
