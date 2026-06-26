@@ -47,14 +47,9 @@ export const HomePage: React.FC<HomePageProps> = ({
   onAddToCart,
   onToggleWishlist,
 }) => {
+  const inSection = (key: string) => collectibles.filter((c) => c.sections?.includes(key));
   const byDemand = [...collectibles].sort((a, b) => (b.demandScore ?? 0) - (a.demandScore ?? 0));
   const featured = byDemand.slice(0, 4);
-  const bestSellers = collectibles.filter((c) => (c.demandScore ?? 0) >= 92).slice(0, 4);
-  const latest = [...collectibles].sort((a, b) => b.releaseYear - a.releaseYear).slice(0, 4);
-  const limited = collectibles
-    .filter((c) => c.rarityLevel === 'Super Treasure Hunt' || c.rarityLevel === 'Chase')
-    .slice(0, 4);
-  const collectorPicks = [...collectibles].sort((a, b) => b.price - a.price).slice(0, 4);
 
   // Categories derived from the catalog (vehicle types) with counts.
   const categoryMap = new Map<string, number>();
@@ -71,7 +66,7 @@ export const HomePage: React.FC<HomePageProps> = ({
     'Electric Hypercar': 'electric_bolt',
   };
 
-  const grid = (items: Collectible[]) => (
+  const grid = (items: Collectible[], badge?: { label: string; cls: string }) => (
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-md">
       {isLoading
         ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
@@ -80,6 +75,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               key={item.id}
               item={item}
               index={i}
+              badgeOverride={badge}
               isWishlisted={wishlistNames.has(item.name)}
               onSelect={onSelect}
               onAddToCart={onAddToCart}
@@ -88,6 +84,15 @@ export const HomePage: React.FC<HomePageProps> = ({
           ))}
     </div>
   );
+
+  // Section badge styles matching the premium mockup.
+  const BADGE = {
+    best: { label: 'BEST SELLER', cls: 'bg-primary text-on-primary' },
+    jdm: { label: 'JDM', cls: 'bg-purple-600 text-white' },
+    latest: { label: 'NEW', cls: 'bg-green-500 text-black' },
+    limited: { label: 'LIMITED', cls: 'bg-tertiary text-on-tertiary' },
+    collector: { label: "COLLECTOR'S PICK", cls: 'bg-secondary text-on-secondary' },
+  };
 
   return (
     <div className="h-full overflow-y-auto custom-scrollbar">
@@ -155,27 +160,33 @@ export const HomePage: React.FC<HomePageProps> = ({
         </section>
 
         {/* ===================== BEST SELLERS ===================== */}
-        <section>
-          <SectionHead eyebrow="Most wanted" title="Best Sellers" onMore={onShop} />
-          {grid(bestSellers.length ? bestSellers : featured)}
+        <section id="best-sellers">
+          <SectionHead eyebrow="Most wanted" title="⭐ Best Sellers" onMore={onShop} />
+          {grid(inSection('best-seller'), BADGE.best)}
+        </section>
+
+        {/* ===================== JDM LEGENDS ===================== */}
+        <section id="jdm-legends">
+          <SectionHead eyebrow="Rising sun" title="🇯🇵 JDM Legends" onMore={onShop} />
+          {grid(inSection('jdm'), BADGE.jdm)}
         </section>
 
         {/* ===================== LATEST ARRIVALS ===================== */}
         <section id="latest-arrivals">
-          <SectionHead eyebrow="Fresh drops" title="Latest Arrivals" onMore={onShop} />
-          {grid(latest)}
+          <SectionHead eyebrow="Fresh drops" title="🚀 Latest Arrivals" onMore={onShop} />
+          {grid(inSection('latest'), BADGE.latest)}
         </section>
 
         {/* ===================== LIMITED EDITIONS ===================== */}
         <section id="limited-editions">
-          <SectionHead eyebrow="Rare & numbered" title="Limited Editions" onMore={onShop} />
-          {grid(limited)}
+          <SectionHead eyebrow="Rare & numbered" title="💎 Limited Editions" onMore={onShop} />
+          {grid(inSection('limited'), BADGE.limited)}
         </section>
 
-        {/* ===================== COLLECTOR PICKS ===================== */}
-        <section>
-          <SectionHead eyebrow="Grail tier" title="Collector Picks" onMore={onShop} />
-          {grid(collectorPicks)}
+        {/* ===================== COLLECTOR'S PICKS ===================== */}
+        <section id="collector-picks">
+          <SectionHead eyebrow="Grail tier" title="🏆 Collector's Picks" onMore={onShop} />
+          {grid(inSection('collector'), BADGE.collector)}
         </section>
 
         {/* ===================== TESTIMONIALS ===================== */}

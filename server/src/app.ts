@@ -26,6 +26,7 @@ interface Collectible {
   notes?: string;
   isFeatured?: boolean;
   demandScore?: number;
+  sections?: string[];
 }
 
 interface Deal {

@@ -13,6 +13,8 @@ export interface Collectible {
   notes?: string;
   isFeatured?: boolean;
   demandScore?: number;
+  // Which homepage sections this car belongs to (e.g. 'best-seller', 'jdm').
+  sections?: string[];
 }
 
 export interface Deal {

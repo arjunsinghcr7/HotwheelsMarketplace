@@ -7,6 +7,8 @@ interface ProductCardProps {
   index?: number;
   isSelected?: boolean;
   isWishlisted?: boolean;
+  // Overrides the rarity badge (e.g. a section badge like "BEST SELLER").
+  badgeOverride?: { label: string; cls: string };
   onSelect?: (item: Collectible) => void;
   onAddToCart?: (item: Collectible) => void;
   onToggleWishlist?: (item: Collectible) => void;
@@ -35,6 +37,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   index = 0,
   isSelected = false,
   isWishlisted = false,
+  badgeOverride,
   onSelect,
   onAddToCart,
   onToggleWishlist,
@@ -48,7 +51,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     return () => window.removeEventListener('click', close);
   }, [menuOpen]);
 
-  const badge = rarityBadge(item.rarityLevel);
+  const badge = badgeOverride ?? rarityBadge(item.rarityLevel);
   const rating = ratingFor(item.demandScore);
   const isNew = item.releaseYear >= 2023;
   const isBestSeller = (item.demandScore ?? 0) >= 92;
@@ -75,7 +78,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <span className={`px-2 py-0.5 text-[9px] font-bold rounded-full tracking-wide ${badge.cls}`}>
             {badge.label}
           </span>
-          {isBestSeller ? (
+          {!badgeOverride && (isBestSeller ? (
             <span className="px-2 py-0.5 text-[9px] font-bold rounded-full bg-primary text-on-primary tracking-wide">
               BEST SELLER
             </span>
@@ -83,7 +86,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <span className="px-2 py-0.5 text-[9px] font-bold rounded-full bg-green-500 text-black tracking-wide">
               NEW
             </span>
-          ) : null}
+          ) : null)}
         </div>
 
         {/* Wishlist heart */}
