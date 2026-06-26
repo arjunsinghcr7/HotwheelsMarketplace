@@ -41,6 +41,7 @@ import {
 import { HomePage } from './components/HomePage';
 import { CartDrawer } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
+import { CATALOG } from './data/catalog';
 import { initTheme } from './services/theme';
 
 // Default images used for cars added without an uploaded photo.
@@ -71,12 +72,15 @@ function App() {
   const [activeMenu, setActiveMenu] = useState('Home');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // API Data states
-  const [collectibles, setCollectibles] = useState<Collectible[]>([]);
+  // API Data states. Seed from the bundled catalog so content shows instantly
+  // (and survives an unreachable API); the API overrides these when it responds.
+  const [collectibles, setCollectibles] = useState<Collectible[]>(CATALOG);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [featuredItem, setFeaturedItem] = useState<Collectible | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [featuredItem, setFeaturedItem] = useState<Collectible | null>(
+    () => CATALOG.find((c) => c.isFeatured) ?? CATALOG[0] ?? null
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
   // User's personal collection + price watchlist + cart (stored locally)
   const [myCollection, setMyCollection] = useState<MyCar[]>([]);
@@ -106,19 +110,18 @@ function App() {
   const loadData = async () => {
     try {
       const colData = await fetchCollectibles();
-      setCollectibles(colData);
-      
-      const dealsData = await fetchDeals();
-      setDeals(dealsData);
-      
-      const statsData = await fetchStats();
-      setStats(statsData);
-
-      // Set default featured item (Mustang on startup or first item)
+      // Only override the bundled catalog when the API actually returns cars.
       if (colData.length > 0) {
-        const featured = colData.find(item => item.isFeatured) || colData[0];
+        setCollectibles(colData);
+        const featured = colData.find((item) => item.isFeatured) || colData[0];
         setFeaturedItem(featured);
       }
+
+      const dealsData = await fetchDeals();
+      if (dealsData.length > 0) setDeals(dealsData);
+
+      const statsData = await fetchStats();
+      setStats(statsData);
     } catch (error) {
       console.error('Failed to load database content', error);
     } finally {
