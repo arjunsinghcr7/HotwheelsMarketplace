@@ -32,12 +32,13 @@ import type {
   Deal,
   Stats
 } from './services/api';
-import type { MyCar, WatchItem } from './services/collection';
+import type { MyCar, WatchItem, CartItem } from './services/collection';
 import {
   getMyCollection, addMyCar, deleteMyCar, clearMyCollection,
   getWatchlist, addWatch, removeWatch, clearWatchlist,
-  addToCart, toggleWatch
+  addToCart, toggleWatch, getCart
 } from './services/collection';
+import { HomePage } from './components/HomePage';
 import { initTheme } from './services/theme';
 
 // Default images used for cars added without an uploaded photo.
@@ -64,8 +65,8 @@ const DEFAULT_FEATURED: Collectible = {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState('Marketplace');
-  const [activeMenu, setActiveMenu] = useState('Marketplace');
+  const [activeTab, setActiveTab] = useState('Home');
+  const [activeMenu, setActiveMenu] = useState('Home');
   const [searchQuery, setSearchQuery] = useState('');
   
   // API Data states
@@ -75,9 +76,10 @@ function App() {
   const [featuredItem, setFeaturedItem] = useState<Collectible | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // User's personal collection + price watchlist (stored locally in the browser)
+  // User's personal collection + price watchlist + cart (stored locally)
   const [myCollection, setMyCollection] = useState<MyCar[]>([]);
   const [watchlist, setWatchlist] = useState<WatchItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   // Chart timeframe state
   const [timeframe, setTimeframe] = useState<'1W' | '1M' | '1Y'>('1M');
@@ -125,7 +127,17 @@ function App() {
     loadData();
     setMyCollection(getMyCollection());
     setWatchlist(getWatchlist());
+    setCart(getCart());
   }, []);
+
+  // Searching from the homepage jumps to the marketplace where results show.
+  useEffect(() => {
+    if (searchQuery.trim() && activeMenu === 'Home') {
+      setActiveTab('Marketplace');
+      setActiveMenu('Marketplace');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const handleClearCollection = () => {
     clearMyCollection();
@@ -184,15 +196,44 @@ function App() {
 
   // Add a marketplace car to the shopping cart.
   const handleAddToCart = (item: Collectible) => {
-    addToCart({
-      id: item.id,
-      name: item.name,
-      brand: item.brand,
-      price: item.price,
-      image: item.image,
-      rarityLevel: item.rarityLevel,
-    });
+    setCart(
+      addToCart({
+        id: item.id,
+        name: item.name,
+        brand: item.brand,
+        price: item.price,
+        image: item.image,
+        rarityLevel: item.rarityLevel,
+      })
+    );
     toast(`${item.name} added to cart`, 'success');
+  };
+
+  // Navbar cart icon — full slide-in cart drawer arrives in the next phase.
+  const handleOpenCart = () => {
+    const count = cart.reduce((n, c) => n + c.qty, 0);
+    toast(count > 0 ? `${count} item${count === 1 ? '' : 's'} in your cart` : 'Your cart is empty', 'info');
+  };
+
+  // Navbar wishlist icon — show the watchlist (lives on the marketplace view).
+  const handleOpenWishlist = () => {
+    if (watchlist.length === 0) {
+      toast('Your wishlist is empty', 'info');
+      return;
+    }
+    setActiveTab('Marketplace');
+    setActiveMenu('Marketplace');
+    toast(`${watchlist.length} saved item${watchlist.length === 1 ? '' : 's'}`, 'info');
+  };
+
+  // Navbar "New Arrivals / Limited Editions / About / Contact" — scroll to the
+  // matching homepage section (switching to Home first if needed).
+  const handleNavigateSection = (sectionId: string) => {
+    setActiveTab('Home');
+    setActiveMenu('Home');
+    setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
   };
 
   // Toggle a car on the wishlist (the price watchlist) from a product card.
@@ -225,7 +266,9 @@ function App() {
   // Sync tab navigation with menu navigation
   const handleSetTab = (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'Marketplace') {
+    if (tab === 'Home') {
+      setActiveMenu('Home');
+    } else if (tab === 'Marketplace') {
       setActiveMenu('Marketplace');
     } else if (tab === 'Collection') {
       setActiveMenu('My Collection');
@@ -276,26 +319,44 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-surface-dim text-on-surface select-none">
-      <Navbar 
+      <Navbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         activeTab={activeTab}
         setActiveTab={handleSetTab}
+        onNavigateSection={handleNavigateSection}
+        cartCount={cart.reduce((n, c) => n + c.qty, 0)}
+        wishlistCount={watchlist.length}
+        onOpenCart={handleOpenCart}
+        onOpenWishlist={handleOpenWishlist}
       />
       
       <div className="flex h-full pt-16 pb-8 overflow-hidden">
-        {/* Sidebar Left */}
-        <Sidebar
-          activeMenu={activeMenu}
-          setActiveMenu={handleSetMenu}
-          onOpenRarityGuide={() => setIsRarityGuideOpen(true)}
-          onOpenSettings={() => setIsSettingsOpen(true)}
-        />
-        
-        {/* Main Workspace */}
-        <main className="flex-1 ml-0 xl:ml-64 overflow-hidden">
+        {/* Sidebar Left — hidden on the full-bleed Home landing */}
+        {activeMenu !== 'Home' && (
+          <Sidebar
+            activeMenu={activeMenu}
+            setActiveMenu={handleSetMenu}
+            onOpenRarityGuide={() => setIsRarityGuideOpen(true)}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+          />
+        )}
 
-        {activeMenu === 'My Collection' ? (
+        {/* Main Workspace */}
+        <main className={`flex-1 overflow-hidden ${activeMenu === 'Home' ? '' : 'ml-0 xl:ml-64'}`}>
+
+        {activeMenu === 'Home' ? (
+          <HomePage
+            collectibles={collectibles}
+            isLoading={isLoading}
+            wishlistNames={wishlistNames}
+            onSelect={(item) => { setFeaturedItem(item); handleSetTab('Marketplace'); }}
+            onShop={() => handleSetTab('Marketplace')}
+            onExplore={() => handleSetTab('Marketplace')}
+            onAddToCart={handleAddToCart}
+            onToggleWishlist={handleToggleWishlist}
+          />
+        ) : activeMenu === 'My Collection' ? (
           <CollectionGallery
             cars={myCollection}
             searchQuery={searchQuery}
