@@ -35,7 +35,8 @@ import type {
 import type { MyCar, WatchItem } from './services/collection';
 import {
   getMyCollection, addMyCar, deleteMyCar, clearMyCollection,
-  getWatchlist, addWatch, removeWatch, clearWatchlist
+  getWatchlist, addWatch, removeWatch, clearWatchlist,
+  addToCart, toggleWatch
 } from './services/collection';
 import { initTheme } from './services/theme';
 
@@ -72,6 +73,7 @@ function App() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [featuredItem, setFeaturedItem] = useState<Collectible | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // User's personal collection + price watchlist (stored locally in the browser)
   const [myCollection, setMyCollection] = useState<MyCar[]>([]);
@@ -113,6 +115,8 @@ function App() {
       }
     } catch (error) {
       console.error('Failed to load database content', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -178,6 +182,34 @@ function App() {
     setWatchlist(removeWatch(id));
   };
 
+  // Add a marketplace car to the shopping cart.
+  const handleAddToCart = (item: Collectible) => {
+    addToCart({
+      id: item.id,
+      name: item.name,
+      brand: item.brand,
+      price: item.price,
+      image: item.image,
+      rarityLevel: item.rarityLevel,
+    });
+    toast(`${item.name} added to cart`, 'success');
+  };
+
+  // Toggle a car on the wishlist (the price watchlist) from a product card.
+  const handleToggleWishlist = (item: Collectible) => {
+    const wasSaved = watchlist.some((w) => w.name === item.name);
+    setWatchlist(
+      toggleWatch({
+        name: item.name,
+        brand: item.brand,
+        price: item.price,
+        rarityLevel: item.rarityLevel,
+        releaseYear: item.releaseYear,
+      })
+    );
+    toast(wasSaved ? `Removed ${item.name} from wishlist` : `Saved ${item.name} to wishlist`, wasSaved ? 'info' : 'success');
+  };
+
   const handleDeleteCollectible = async (id: string) => {
     try {
       await deleteCollectible(id);
@@ -238,6 +270,9 @@ function App() {
   // Vault stats reflect exactly the user's collection — nothing more, nothing less.
   const myTotalValue = myCollection.reduce((sum, c) => sum + c.price, 0);
   const myCount = myCollection.length;
+
+  // Names currently on the wishlist — drives the heart toggle on product cards.
+  const wishlistNames = new Set(watchlist.map((w) => w.name));
 
   return (
     <div className="h-screen flex flex-col bg-surface-dim text-on-surface select-none">
@@ -375,7 +410,12 @@ function App() {
               onSelectItem={setFeaturedItem}
               selectedItem={featuredItem}
               onDeleteCollectible={handleDeleteCollectible}
+              onAddToCart={handleAddToCart}
+              onToggleWishlist={handleToggleWishlist}
+              wishlistNames={wishlistNames}
+              isLoading={isLoading}
               searchQuery={searchQuery}
+              onBrowse={() => handleSetMenu('My Collection')}
             />
             
             {/* Deals Section */}

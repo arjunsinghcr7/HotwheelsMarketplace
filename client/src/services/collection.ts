@@ -88,6 +88,77 @@ export function clearWatchlist(): void {
   localStorage.removeItem(WATCHLIST_KEY);
 }
 
+// True if a car (matched by name) is already on the watchlist/wishlist.
+export function isWatched(name: string): boolean {
+  return getWatchlist().some((w) => w.name === name);
+}
+
+// Add to the watchlist if absent, otherwise remove it — drives the heart toggle.
+export function toggleWatch(item: Omit<WatchItem, 'id'>): WatchItem[] {
+  const existing = getWatchlist().find((w) => w.name === item.name);
+  if (existing) return removeWatch(existing.id);
+  return addWatch(item);
+}
+
+// ---- Shopping cart ---------------------------------------------------------
+// Stored in localStorage; keyed by the catalog/collectible id. The cart drawer
+// and checkout (later phase) read from here.
+
+export interface CartItem {
+  id: string; // catalog id
+  name: string;
+  brand: string;
+  price: number;
+  image: string;
+  rarityLevel: string;
+  qty: number;
+}
+
+const CART_KEY = 'hw_cart';
+
+export function getCart(): CartItem[] {
+  try {
+    const raw = localStorage.getItem(CART_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistCart(items: CartItem[]): CartItem[] {
+  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  return items;
+}
+
+export function addToCart(item: Omit<CartItem, 'qty'>, qty = 1): CartItem[] {
+  const cart = getCart();
+  const existing = cart.find((c) => c.id === item.id);
+  if (existing) {
+    existing.qty += qty;
+    return persistCart([...cart]);
+  }
+  return persistCart([{ ...item, qty }, ...cart]);
+}
+
+export function setCartQty(id: string, qty: number): CartItem[] {
+  if (qty <= 0) return removeFromCart(id);
+  return persistCart(getCart().map((c) => (c.id === id ? { ...c, qty } : c)));
+}
+
+export function removeFromCart(id: string): CartItem[] {
+  return persistCart(getCart().filter((c) => c.id !== id));
+}
+
+export function clearCart(): void {
+  localStorage.removeItem(CART_KEY);
+}
+
+export function cartCount(): number {
+  return getCart().reduce((n, c) => n + c.qty, 0);
+}
+
 // Read an image File and return a downscaled JPEG data URL so large photos do
 // not blow past the localStorage quota.
 export function fileToDataURL(file: File, maxWidth = 900): Promise<string> {
