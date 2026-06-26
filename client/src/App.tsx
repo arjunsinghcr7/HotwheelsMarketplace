@@ -510,6 +510,9 @@ function App() {
             <MarketAds
               items={isSearching ? filteredCollectibles : collectibles}
               onSelect={handleOpenDetails}
+              onAddToCart={handleAddToCart}
+              onToggleWishlist={handleToggleWishlist}
+              wishlistNames={wishlistNames}
               searchActive={isSearching}
               searchQuery={searchQuery}
             />

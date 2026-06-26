@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { formatPrice } from '../utils/format';
 import type { Collectible } from '../services/api';
+import { ProductCard } from './ProductCard';
 
 interface MarketAdsProps {
   items: Collectible[];
   onSelect: (item: Collectible) => void;
+  onAddToCart: (item: Collectible) => void;
+  onToggleWishlist: (item: Collectible) => void;
+  wishlistNames: Set<string>;
   // When the user is actively searching, suppress the demo fallback ads so an
   // empty result reads as "no matches" rather than unrelated promos.
   searchActive?: boolean;
@@ -25,14 +28,15 @@ const DEFAULT_ADS: Collectible[] = [
   { id: 'ad-8', name: 'Nissan Skyline GT-R R34', brand: 'Nissan', vehicleType: 'JDM', scale: '1:64', condition: 'Mint (M)', releaseYear: 1999, price: 29.99, rarityLevel: 'Treasure Hunt', series: 'HW J-Imports', image: '/cars/01-nissan-skyline-gtr-r34.jpg' },
 ];
 
-const rarityColor = (level: string) => {
-  if (level === 'Super Treasure Hunt') return 'bg-tertiary text-on-tertiary';
-  if (level === 'Chase') return 'bg-primary text-on-primary';
-  if (level === 'Treasure Hunt') return 'bg-secondary text-on-secondary';
-  return 'bg-surface-container-highest text-on-surface-variant';
-};
-
-export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect, searchActive = false, searchQuery = '' }) => {
+export const MarketAds: React.FC<MarketAdsProps> = ({
+  items,
+  onSelect,
+  onAddToCart,
+  onToggleWishlist,
+  wishlistNames,
+  searchActive = false,
+  searchQuery = '',
+}) => {
   // Promote up to 8 of the most valuable available cars. Fall back to demo ads
   // only when NOT searching — during a search an empty list means "no matches".
   const sorted = [...items].sort((a, b) => b.price - a.price);
@@ -111,36 +115,16 @@ export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect, searchAct
           </button>
         )}
         <div ref={scrollRef} onScroll={updateArrows} className="flex gap-md overflow-x-auto pb-sm custom-scrollbar">
-        {ads.map((car) => (
-          <div
-            key={car.id}
-            className="card-lift flex-shrink-0 w-56 bg-surface-container rounded-xl border border-outline-variant overflow-hidden group hover:border-secondary"
-          >
-            <div className="h-28 relative overflow-hidden bg-surface-dim">
-              <img
-                src={car.image}
-                alt={car.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <span className={`absolute top-2 left-2 px-2 py-0.5 text-[10px] rounded-full font-bold ${rarityColor(car.rarityLevel)}`}>
-                {car.rarityLevel === 'Super Treasure Hunt' ? 'STH' : car.rarityLevel === 'Treasure Hunt' ? 'TH' : car.rarityLevel}
-              </span>
-            </div>
-            <div className="p-sm">
-              <p className="text-label-md font-bold truncate text-on-surface">{car.name}</p>
-              <p className="text-[11px] text-on-surface-variant mb-sm">{car.brand} · {car.releaseYear}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-label-md font-bold text-secondary">
-                  {formatPrice(car.price)}
-                </span>
-                <button
-                  onClick={() => onSelect(car)}
-                  className="px-sm py-1 bg-secondary-container text-on-secondary-container rounded-lg text-label-sm font-bold hover:brightness-110 transition-all"
-                >
-                  View
-                </button>
-              </div>
-            </div>
+        {ads.map((car, i) => (
+          <div key={car.id} className="w-64 flex-shrink-0">
+            <ProductCard
+              item={car}
+              index={i}
+              isWishlisted={wishlistNames.has(car.name)}
+              onSelect={onSelect}
+              onAddToCart={onAddToCart}
+              onToggleWishlist={onToggleWishlist}
+            />
           </div>
         ))}
         </div>

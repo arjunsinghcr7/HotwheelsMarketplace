@@ -165,7 +165,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {item.name}
         </p>
 
-        {/* Rating */}
+        {/* Rating + condition (quality) */}
         <div className="flex items-center gap-1" aria-label={`Rated ${rating} out of 5`}>
           {[0, 1, 2, 3, 4].map((i) => (
             <span
@@ -177,6 +177,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </span>
           ))}
           <span className="text-[11px] text-on-surface-variant ml-0.5">{rating.toFixed(1)}</span>
+          <span
+            className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-medium"
+            title={`Condition: ${item.condition}`}
+          >
+            {item.condition}
+          </span>
         </div>
 
         {/* Price + Add to cart */}
