@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { formatPrice } from '../utils/format';
 import type { Collectible } from '../services/api';
 
 interface MarketAdsProps {
@@ -14,14 +15,14 @@ interface MarketAdsProps {
 // API data loads. Mirrors the top of the live catalog (server/db.json) and uses
 // the same cropped car art served from /public/cars.
 const DEFAULT_ADS: Collectible[] = [
-  { id: 'ad-1', name: 'Aston Martin Valkyrie', brand: 'Aston Martin', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2022, price: 1299, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/19-aston-martin-valkyrie.jpg' },
-  { id: 'ad-2', name: 'Bugatti Chiron', brand: 'Bugatti', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2022, price: 1199, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/10-bugatti-chiron.jpg' },
-  { id: 'ad-3', name: 'Koenigsegg Jesko', brand: 'Koenigsegg', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2023, price: 1199, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/11-koenigsegg-jesko.jpg' },
-  { id: 'ad-4', name: 'Lamborghini Aventador SVJ', brand: 'Lamborghini', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2021, price: 1099, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/08-lamborghini-aventador-svj.jpg' },
-  { id: 'ad-5', name: 'McLaren P1', brand: 'McLaren', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2015, price: 1099, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/09-mclaren-p1.jpg' },
-  { id: 'ad-6', name: 'Ferrari F40', brand: 'Ferrari', vehicleType: 'Classic Supercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 1987, price: 999, rarityLevel: 'Super Treasure Hunt', series: 'HW Exotics', image: '/cars/07-ferrari-f40.jpg' },
-  { id: 'ad-7', name: 'Porsche 911 GT3 RS', brand: 'Porsche', vehicleType: 'Supercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2023, price: 899, rarityLevel: 'Super Treasure Hunt', series: 'HW Exotics', image: '/cars/06-porsche-911-gt3-rs.jpg' },
-  { id: 'ad-8', name: 'Nissan Skyline GT-R R34', brand: 'Nissan', vehicleType: 'JDM', scale: '1:64', condition: 'Mint (M)', releaseYear: 1999, price: 799, rarityLevel: 'Treasure Hunt', series: 'HW J-Imports', image: '/cars/01-nissan-skyline-gtr-r34.jpg' },
+  { id: 'ad-1', name: 'Aston Martin Valkyrie', brand: 'Aston Martin', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2022, price: 249.99, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/19-aston-martin-valkyrie.jpg' },
+  { id: 'ad-2', name: 'Bugatti Chiron', brand: 'Bugatti', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2022, price: 229.99, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/10-bugatti-chiron.jpg' },
+  { id: 'ad-3', name: 'Koenigsegg Jesko', brand: 'Koenigsegg', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2023, price: 219.99, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/11-koenigsegg-jesko.jpg' },
+  { id: 'ad-4', name: 'Lamborghini Aventador SVJ', brand: 'Lamborghini', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2021, price: 129.99, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/08-lamborghini-aventador-svj.jpg' },
+  { id: 'ad-5', name: 'McLaren P1', brand: 'McLaren', vehicleType: 'Hypercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2015, price: 119.99, rarityLevel: 'Super Treasure Hunt', series: 'HW Hypercars', image: '/cars/09-mclaren-p1.jpg' },
+  { id: 'ad-6', name: 'Ferrari F40', brand: 'Ferrari', vehicleType: 'Classic Supercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 1987, price: 199.99, rarityLevel: 'Super Treasure Hunt', series: 'HW Exotics', image: '/cars/07-ferrari-f40.jpg' },
+  { id: 'ad-7', name: 'Porsche 911 GT3 RS', brand: 'Porsche', vehicleType: 'Supercar', scale: '1:64', condition: 'Mint (M)', releaseYear: 2023, price: 149.99, rarityLevel: 'Super Treasure Hunt', series: 'HW Exotics', image: '/cars/06-porsche-911-gt3-rs.jpg' },
+  { id: 'ad-8', name: 'Nissan Skyline GT-R R34', brand: 'Nissan', vehicleType: 'JDM', scale: '1:64', condition: 'Mint (M)', releaseYear: 1999, price: 29.99, rarityLevel: 'Treasure Hunt', series: 'HW J-Imports', image: '/cars/01-nissan-skyline-gtr-r34.jpg' },
 ];
 
 const rarityColor = (level: string) => {
@@ -113,7 +114,7 @@ export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect, searchAct
         {ads.map((car) => (
           <div
             key={car.id}
-            className="flex-shrink-0 w-56 bg-surface-container rounded-xl border border-outline-variant overflow-hidden group hover:border-secondary transition-all"
+            className="card-lift flex-shrink-0 w-56 bg-surface-container rounded-xl border border-outline-variant overflow-hidden group hover:border-secondary"
           >
             <div className="h-28 relative overflow-hidden bg-surface-dim">
               <img
@@ -130,7 +131,7 @@ export const MarketAds: React.FC<MarketAdsProps> = ({ items, onSelect, searchAct
               <p className="text-[11px] text-on-surface-variant mb-sm">{car.brand} · {car.releaseYear}</p>
               <div className="flex items-center justify-between">
                 <span className="text-label-md font-bold text-secondary">
-                  ${car.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatPrice(car.price)}
                 </span>
                 <button
                   onClick={() => onSelect(car)}

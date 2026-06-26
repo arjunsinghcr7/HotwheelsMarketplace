@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { formatPrice } from '../utils/format';
 import type { MyCar } from '../services/collection';
 import { fileToDataURL } from '../services/collection';
 
@@ -107,7 +108,7 @@ export const CollectionGallery: React.FC<CollectionGalleryProps> = ({
           <p className="text-headline-md font-bold text-on-surface">
             {cars.length}
             <span className="text-label-sm text-on-surface-variant font-normal ml-2">
-              · ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              · {formatPrice(totalValue)}
             </span>
           </p>
         </div>
@@ -249,7 +250,7 @@ export const CollectionGallery: React.FC<CollectionGalleryProps> = ({
                   <span className="material-symbols-outlined text-sm">delete</span>
                 </button>
                 <span className="absolute bottom-2 right-2 px-2 py-1 bg-black/70 backdrop-blur text-white text-[11px] rounded font-bold border border-white/10">
-                  ${car.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatPrice(car.price)}
                 </span>
               </div>
               <div className="p-sm">

@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatPrice } from '../utils/format';
 import type { Deal } from '../services/api';
 
 interface DealsSectionProps {
@@ -31,9 +32,9 @@ export const DealsSection: React.FC<DealsSectionProps> = ({ deals }) => {
             <div className="flex-1 overflow-hidden">
               <p className="text-label-sm font-bold truncate text-on-surface">{deal.name}</p>
               <p className="text-[11px] text-green-400 font-bold">
-                ${deal.price.toFixed(2)}{' '}
+                {formatPrice(deal.price)}{' '}
                 <span className="text-on-surface-variant line-through font-normal ml-1">
-                  ${deal.originalPrice.toFixed(2)}
+                  {formatPrice(deal.originalPrice)}
                 </span>
               </p>
             </div>

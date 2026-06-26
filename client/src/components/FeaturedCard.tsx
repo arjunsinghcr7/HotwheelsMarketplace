@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatPrice } from '../utils/format';
 import type { Collectible } from '../services/api';
 
 interface FeaturedCardProps {
@@ -46,7 +47,7 @@ export const FeaturedCard: React.FC<FeaturedCardProps> = ({ item, onOpenHistory 
         <div className="flex items-center gap-lg mb-md">
           <div>
             <p className="text-label-sm text-white/70">Market Value</p>
-            <p className="text-headline-md text-secondary font-bold drop-shadow">${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            <p className="text-headline-md text-secondary font-bold drop-shadow">{formatPrice(item.price)}</p>
           </div>
           <div className="w-px h-10 bg-white/20"></div>
           <div>

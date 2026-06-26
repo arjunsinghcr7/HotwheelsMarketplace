@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatPrice } from '../utils/format';
 import type { WatchItem } from '../services/collection';
 
 interface WatchlistCardProps {
@@ -45,7 +46,7 @@ export const WatchlistCard: React.FC<WatchlistCardProps> = ({ items, onRemove })
               <div className="text-right">
                 <p className="text-label-sm text-on-surface-variant">Target</p>
                 <p className="text-label-md font-bold text-secondary">
-                  ${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatPrice(item.price)}
                 </p>
               </div>
               <button

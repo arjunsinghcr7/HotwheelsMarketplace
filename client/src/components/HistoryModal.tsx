@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatPrice } from '../utils/format';
 import type { Collectible } from '../services/api';
 
 interface HistoryModalProps {
@@ -73,7 +74,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ item, isOpen, onClos
                     </span>
                   </td>
                   <td className="py-3 font-mono text-right font-bold text-on-surface">
-                    ${row.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {formatPrice(row.price)}
                   </td>
                   <td className="py-3 text-on-surface-variant">{row.condition}</td>
                   <td className="py-3 text-on-surface-variant">{row.collector}</td>

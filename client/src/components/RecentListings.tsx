@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatPrice } from '../utils/format';
 import type { Collectible } from '../services/api';
 
 interface RecentListingsProps {
@@ -78,7 +79,7 @@ export const RecentListings: React.FC<RecentListingsProps> = ({
             <div
               key={item.id}
               onClick={() => onSelectItem(item)}
-              className={`glass-panel rounded-xl overflow-hidden group cursor-pointer transition-all border ${cardBorderClass} ${hoverBorderClass} ${glowClass} ${
+              className={`card-lift glass-panel rounded-xl overflow-hidden group cursor-pointer border ${cardBorderClass} ${hoverBorderClass} ${glowClass} ${
                 isSelected ? 'scale-[0.98] bg-surface-container-high/55' : ''
               }`}
             >
@@ -106,7 +107,7 @@ export const RecentListings: React.FC<RecentListingsProps> = ({
                 )}
                 
                 <span className="absolute bottom-2 right-2 px-2 py-1 bg-black/70 backdrop-blur text-white text-[10px] rounded font-bold border border-white/10">
-                  ${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatPrice(item.price)}
                 </span>
               </div>
               

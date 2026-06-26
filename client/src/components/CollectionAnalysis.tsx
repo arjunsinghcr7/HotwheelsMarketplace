@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatPrice } from '../utils/format';
 import type { MyCar } from '../services/collection';
 
 interface CollectionAnalysisProps {
@@ -12,7 +13,7 @@ const RARITY_META: { key: string; color: string; dot: string }[] = [
   { key: 'Mainline', color: 'text-on-surface', dot: 'bg-on-surface-variant' },
 ];
 
-const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+const money = formatPrice;
 
 export const CollectionAnalysis: React.FC<CollectionAnalysisProps> = ({ cars }) => {
   const count = cars.length;

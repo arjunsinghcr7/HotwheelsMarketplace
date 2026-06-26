@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { formatPrice } from './utils/format';
+import { Toaster, toast } from './utils/toast';
+import { BackToTop } from './components/BackToTop';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { VaultDiscoveryForm } from './components/VaultDiscoveryForm';
@@ -50,7 +53,7 @@ const DEFAULT_FEATURED: Collectible = {
   scale: '1:64',
   condition: 'Mint (M)',
   releaseYear: 2023,
-  price: 1850.0,
+  price: 149.99,
   rarityLevel: 'Super Treasure Hunt',
   series: 'HW Premium Exotics',
   image: '/cars/06-porsche-911-gt3-rs.jpg',
@@ -143,6 +146,7 @@ function App() {
     await addCollectible({ ...formData, image: pickImage(formData.rarityLevel) });
     // Reload items and update global stats
     await loadData();
+    toast(`${formData.name} listed on the marketplace`, 'success');
   };
 
   // "Buy" — add the entered car to the user's personal collection.
@@ -155,6 +159,7 @@ function App() {
       image: pickImage(formData.rarityLevel),
       notes: formData.notes || undefined,
     });
+    toast(`${formData.name} added to your collection`, 'success');
   };
 
   // "Track" — add the entered car to the price watchlist.
@@ -166,6 +171,7 @@ function App() {
       rarityLevel: formData.rarityLevel,
       releaseYear: formData.releaseYear,
     }));
+    toast(`Now tracking ${formData.name}`, 'info');
   };
 
   const handleRemoveWatch = (id: string) => {
@@ -297,10 +303,13 @@ function App() {
           </div>
 
           {/* Main content (full width) */}
-          <div className="h-full bg-background overflow-y-auto custom-scrollbar p-sm lg:p-lg flex flex-col gap-lg">
+          <div id="market-scroll" className="h-full bg-background overflow-y-auto custom-scrollbar p-sm lg:p-lg flex flex-col gap-lg">
+
+            {/* Back to top (scrolls this panel) */}
+            <BackToTop targetId="market-scroll" />
 
             {/* Hero Featured & Key Stats */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg animate-slide-up">
               <FeaturedCard
                 item={displayedFeatured}
                 onOpenHistory={() => setIsHistoryOpen(true)}
@@ -314,7 +323,7 @@ function App() {
                     <span className="material-symbols-outlined text-secondary">payments</span>
                   </div>
                   <p className="text-headline-lg font-bold text-on-surface">
-                    ${myTotalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {formatPrice(myTotalValue)}
                   </p>
                   <p className="text-label-sm text-on-surface-variant mt-1">
                     Across {myCount} car{myCount === 1 ? '' : 's'} you own
@@ -400,7 +409,10 @@ function App() {
       {/* Bottom Live Market Ticker */}
       <LiveTicker />
 
-      {/* Floating AI price assistant (bottom-left) */}
+      {/* Toast notifications */}
+      <Toaster />
+
+      {/* Floating AI price assistant (bottom-right) */}
       <AIAssistant />
 
       {/* Settings */}

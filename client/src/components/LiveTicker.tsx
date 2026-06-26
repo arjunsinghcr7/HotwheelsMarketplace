@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { formatPrice } from '../utils/format';
 import { fetchTicker } from '../services/api';
 import type { TickerItem } from '../services/api';
 
@@ -45,7 +46,7 @@ export const LiveTicker: React.FC = () => {
               <span key={`orig-${idx}`} className="text-[10px] flex items-center gap-xs text-on-surface">
                 {item.name}:{' '}
                 <span className={`${colorClass} font-semibold`}>
-                  ${item.price.toFixed(2)} {arrow} {item.change.toFixed(1)}%
+                  {formatPrice(item.price)} {arrow} {item.change.toFixed(1)}%
                 </span>
               </span>
             );
@@ -66,7 +67,7 @@ export const LiveTicker: React.FC = () => {
               <span key={`dup-${idx}`} className="text-[10px] flex items-center gap-xs text-on-surface">
                 {item.name}:{' '}
                 <span className={`${colorClass} font-semibold`}>
-                  ${item.price.toFixed(2)} {arrow} {item.change.toFixed(1)}%
+                  {formatPrice(item.price)} {arrow} {item.change.toFixed(1)}%
                 </span>
               </span>
             );

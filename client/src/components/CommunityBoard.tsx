@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { formatPrice } from '../utils/format';
 import { fetchCommunityThreads, postCommunityThread } from '../services/api';
 import type { CommunityThread as Thread } from '../services/api';
 
@@ -198,7 +199,7 @@ export const CommunityBoard: React.FC = () => {
                       <span className="text-label-sm font-bold text-on-surface">{reply.author}</span>
                       {reply.suggestedPrice !== undefined && (
                         <span className="px-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-label-sm font-bold whitespace-nowrap">
-                          Suggests ${reply.suggestedPrice.toLocaleString('en-US')}
+                          Suggests {formatPrice(reply.suggestedPrice)}
                         </span>
                       )}
                     </div>
