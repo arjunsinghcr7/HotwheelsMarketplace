@@ -6,7 +6,7 @@ import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { VaultDiscoveryForm } from './components/VaultDiscoveryForm';
 import { FeaturedCard } from './components/FeaturedCard';
-import { RecentListings } from './components/RecentListings';
+import { ShopSection } from './components/ShopSection';
 import { DealsSection } from './components/DealsSection';
 import { MarketChart } from './components/MarketChart';
 import { RarityGauge } from './components/RarityGauge';
@@ -314,18 +314,22 @@ function App() {
   // Whether the user is actively searching (drives search-results UI + empty states)
   const isSearching = searchQuery.trim() !== '';
 
-  // Filter collectibles based on active view and search query
+  // Filter collectibles by the search query — matches brand, model (name),
+  // category (vehicle type), series, and year.
+  const q = searchQuery.trim().toLowerCase();
   const filteredCollectibles = collectibles.filter((item) => {
-    const matchesSearch = 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.series.toLowerCase().includes(searchQuery.toLowerCase());
-      
-    if (activeMenu === 'My Collection') {
-      // For demo, show only non-featured items in collection, or all items in collection
-      return matchesSearch;
-    }
-    return matchesSearch;
+    if (!q) return true;
+    const haystack = [
+      item.name,
+      item.brand,
+      item.vehicleType,
+      item.series ?? '',
+      item.rarityLevel,
+      String(item.releaseYear),
+    ]
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(q);
   });
 
   // Fall back to the default Porsche premium listing when nothing is selected.
@@ -486,17 +490,17 @@ function App() {
             {/* Tracking watchlist (cars added via the Track button) */}
             <WatchlistCard items={watchlist} onRemove={handleRemoveWatch} />
 
-            {/* Recent Listings */}
-            <RecentListings
+            {/* Shop — searchable, filterable, sortable catalog */}
+            <ShopSection
               items={filteredCollectibles}
-              onSelectItem={setFeaturedItem}
+              isLoading={isLoading}
               selectedItem={featuredItem}
-              onDeleteCollectible={handleDeleteCollectible}
+              wishlistNames={wishlistNames}
+              searchQuery={searchQuery}
+              onSelectItem={setFeaturedItem}
               onAddToCart={handleAddToCart}
               onToggleWishlist={handleToggleWishlist}
-              wishlistNames={wishlistNames}
-              isLoading={isLoading}
-              searchQuery={searchQuery}
+              onDeleteCollectible={handleDeleteCollectible}
               onBrowse={() => handleSetMenu('My Collection')}
             />
             

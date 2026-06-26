@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface NavbarProps {
   searchQuery: string;
@@ -35,6 +35,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCart,
   onOpenWishlist,
 }) => {
+  const [logoOk, setLogoOk] = useState(true);
+
   const handleNav = (item: NavItem) => {
     if (item.kind === 'tab') setActiveTab(item.value);
     else onNavigateSection(item.value);
@@ -43,12 +45,20 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="flex justify-between items-center w-full px-margin-desktop h-16 fixed top-0 z-50 bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant">
       <div className="flex items-center gap-lg min-w-0">
-        <span
-          className="text-headline-md font-headline-md font-bold text-primary tracking-tighter cursor-pointer shrink-0"
-          onClick={() => setActiveTab('Home')}
-        >
-          HotWheels Paradise
-        </span>
+        <button onClick={() => setActiveTab('Home')} className="shrink-0 flex items-center" aria-label="HotWheels Paradise — Home">
+          {logoOk ? (
+            <img
+              src="/logo.png"
+              alt="HotWheels Paradise"
+              onError={() => setLogoOk(false)}
+              className="h-11 w-auto object-contain"
+            />
+          ) : (
+            <span className="text-headline-md font-headline-md font-bold text-primary tracking-tighter cursor-pointer">
+              HotWheels Paradise
+            </span>
+          )}
+        </button>
         <nav className="hidden xl:flex gap-1 items-center">
           {NAV_ITEMS.map((item) => {
             const active = item.kind === 'tab' && activeTab === item.value;
