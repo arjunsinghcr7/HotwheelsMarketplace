@@ -43,6 +43,8 @@ import { CartDrawer } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { CATALOG } from './data/catalog';
+import type { Profile } from './services/profile';
+import { getProfile, saveProfile, DEFAULT_PROFILE } from './services/profile';
 import { initTheme } from './services/theme';
 
 // Default images used for cars added without an uploaded photo.
@@ -92,6 +94,7 @@ function App() {
   const [detailItem, setDetailItem] = useState<Collectible | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<Collectible[]>([]);
+  const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
 
   // Chart timeframe state
   const [timeframe, setTimeframe] = useState<'1W' | '1M' | '1Y'>('1M');
@@ -139,6 +142,7 @@ function App() {
     setMyCollection(getMyCollection());
     setWatchlist(getWatchlist());
     setCart(getCart());
+    setProfile(getProfile());
     try {
       const r = JSON.parse(localStorage.getItem('hw_recent') || '[]');
       if (Array.isArray(r)) setRecentlyViewed(r);
@@ -146,6 +150,21 @@ function App() {
       // ignore corrupt storage
     }
   }, []);
+
+  // Profile / account (stored locally — no backend auth).
+  const handleSignIn = (email: string, username: string) => {
+    const name = username.trim() || email.split('@')[0];
+    setProfile(saveProfile({ ...profile, email: email.trim(), username: name, loggedIn: true }));
+    toast(`Welcome, ${name}!`, 'success');
+  };
+  const handleSignOut = () => {
+    setProfile(saveProfile({ ...DEFAULT_PROFILE }));
+    toast('Signed out', 'info');
+  };
+  const handleUpdateProfile = (patch: Partial<Profile>) => {
+    setProfile((p) => saveProfile({ ...p, ...patch }));
+    toast('Profile updated', 'success');
+  };
 
   // Open the product details modal and record the view.
   const handleOpenDetails = (item: Collectible) => {
@@ -394,6 +413,10 @@ function App() {
         wishlistCount={watchlist.length}
         onOpenCart={handleOpenCart}
         onOpenWishlist={handleOpenWishlist}
+        profile={profile}
+        onSignIn={handleSignIn}
+        onSignOut={handleSignOut}
+        onUpdateProfile={handleUpdateProfile}
       />
       
       <div className="flex h-full pt-16 pb-8 overflow-hidden">

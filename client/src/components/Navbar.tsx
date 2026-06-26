@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import type { Profile } from '../services/profile';
+import { ProfileMenu } from './ProfileMenu';
 
 interface NavbarProps {
   searchQuery: string;
@@ -10,6 +12,10 @@ interface NavbarProps {
   wishlistCount: number;
   onOpenCart: () => void;
   onOpenWishlist: () => void;
+  profile: Profile;
+  onSignIn: (email: string, username: string) => void;
+  onSignOut: () => void;
+  onUpdateProfile: (patch: Partial<Profile>) => void;
 }
 
 type NavItem = { label: string; kind: 'tab' | 'section'; value: string };
@@ -34,8 +40,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   wishlistCount,
   onOpenCart,
   onOpenWishlist,
+  profile,
+  onSignIn,
+  onSignOut,
+  onUpdateProfile,
 }) => {
   const [logoOk, setLogoOk] = useState(true);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Close the profile dropdown on outside click.
+  useEffect(() => {
+    if (!profileOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
+    };
+    window.addEventListener('click', onClick);
+    return () => window.removeEventListener('click', onClick);
+  }, [profileOpen]);
 
   const handleNav = (item: NavItem) => {
     if (item.kind === 'tab') setActiveTab(item.value);
@@ -143,16 +165,24 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         {/* Profile */}
-        <div
-          id="profile-dropdown"
-          className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center border border-outline-variant cursor-pointer overflow-hidden shrink-0"
-          title="User Profile"
-        >
-          <img
-            className="w-full h-full object-cover"
-            alt="Collector profile"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6tw_BZmhf8Dz3kAAkBB9QOwRRjDPdvPld16xv4xb2aTJd5KHNGxQ72UWkZKHqIM1j6A2kJWGrEC9orVXQy9lnRPe4tjo49UIaouf9LGzbSBqoMxgThmIW4oeCmBDX9TL2MhttDhiN7_0z1BWkmbxew67XcTfIFsocIv3nrohaowusqfsx9Hn_fwFL_XzZmjE36AMu2hEDafSE5Bt_nsGv6SrjCieUHZRoaBIiRIpx5LLSAmdkIighxSaitRn60LBJWWihGw9hwD9-"
-          />
+        <div className="relative shrink-0" ref={profileRef}>
+          <button
+            onClick={() => setProfileOpen((v) => !v)}
+            aria-label="Account"
+            aria-haspopup="menu"
+            aria-expanded={profileOpen}
+            className="btn-press w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center border border-outline-variant overflow-hidden hover:border-primary transition-colors"
+          >
+            <img className="w-full h-full object-cover" alt={profile.loggedIn ? profile.username : 'Account'} src={profile.avatar} />
+          </button>
+          {profileOpen && (
+            <ProfileMenu
+              profile={profile}
+              onSignIn={(email, username) => { onSignIn(email, username); setProfileOpen(false); }}
+              onSignOut={() => { onSignOut(); setProfileOpen(false); }}
+              onUpdate={onUpdateProfile}
+            />
+          )}
         </div>
       </div>
     </header>
