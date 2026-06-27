@@ -60,7 +60,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div
       onClick={() => onSelect?.(item)}
-      className={`card-lift animate-slide-up ${stagger} glass-panel rounded-2xl overflow-hidden group cursor-pointer border ${
+      className={`card-tilt animate-slide-up ${stagger} glass-panel rounded-2xl overflow-hidden group cursor-pointer border ${
         isSelected ? 'border-primary' : 'border-outline-variant hover:border-on-surface-variant/40'
       }`}
     >
@@ -195,7 +195,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 e.stopPropagation();
                 onAddToCart(item);
               }}
-              className="btn-press flex items-center gap-1 pl-2.5 pr-3 py-2 rounded-xl racing-gradient text-white text-label-sm font-bold shadow-lg"
+              className="ripple btn-press flex items-center gap-1 pl-2.5 pr-3 py-2 rounded-xl racing-gradient text-white text-label-sm font-bold shadow-lg"
             >
               <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
               Add

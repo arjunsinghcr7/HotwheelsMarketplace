@@ -97,40 +97,68 @@ export const HomePage: React.FC<HomePageProps> = ({
   return (
     <div className="h-full overflow-y-auto custom-scrollbar">
       {/* ===================== HERO ===================== */}
-      <section className="relative min-h-[78vh] flex items-center overflow-hidden">
-        <img src={HERO_BG} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+      <section className="relative min-h-[92vh] flex items-center overflow-hidden">
+        {/* Cinematic background with a slow Ken-Burns zoom */}
+        <img src={HERO_BG} alt="" className="absolute inset-0 w-full h-full object-cover animate-kenburns" />
+        {/* Lighting: side-darkening gradient, red key-light glow, vignette + floor fade */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/25" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_45%,rgba(255,59,48,0.20),transparent_55%)]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/40" />
+
         <div className="relative z-10 max-w-6xl mx-auto w-full px-md py-xl">
-          <div className="max-w-2xl animate-slide-up">
-            <p className="text-label-md font-bold uppercase tracking-[0.3em] text-primary mb-md">Premium Die-Cast Marketplace</p>
-            <h1 className="font-headline-xl text-[14vw] sm:text-[5.5rem] leading-[0.95] font-extrabold text-white tracking-tight">
-              HOT WHEELS<br />PARADISE
+          <div className="max-w-2xl">
+            <p className="animate-slide-up text-label-md font-bold uppercase tracking-[0.3em] text-primary mb-md flex items-center gap-2">
+              <span className="w-8 h-px bg-primary inline-block" /> Premium Die-Cast Marketplace
+            </p>
+            <h1 className="animate-slide-up delay-1 font-headline-xl text-[15vw] sm:text-[6rem] leading-[0.9] font-extrabold text-white tracking-tight drop-shadow-2xl">
+              HOT WHEELS<br /><span className="text-primary">PARADISE</span>
             </h1>
-            <p className="mt-md text-headline-md font-bold text-white/90 tracking-wide">Collect. Race. Display.</p>
-            <p className="mt-sm text-body-lg text-white/70 max-w-xl">
+            <p className="animate-slide-up delay-2 mt-md text-headline-md font-bold text-white/90 tracking-[0.15em] uppercase">Collect. Race. Display.</p>
+            <p className="animate-slide-up delay-3 mt-sm text-body-lg text-white/70 max-w-xl">
               Discover authenticated Treasure Hunts, Super Treasure Hunts and grail-tier hypercars.
               Build the collection you've always wanted — one legendary casting at a time.
             </p>
-            <div className="mt-lg flex flex-wrap gap-sm">
+            <div className="animate-slide-up delay-4 mt-lg flex flex-wrap gap-sm">
               <button
                 onClick={onExplore}
-                className="btn-press px-lg py-sm rounded-xl racing-gradient text-white font-bold shadow-2xl hover:shadow-[0_0_30px_-5px_rgba(255,59,48,0.6)] transition-shadow"
+                className="ripple btn-press px-lg py-sm rounded-xl racing-gradient text-white font-bold shadow-2xl hover:shadow-[0_0_36px_-6px_rgba(255,59,48,0.7)] transition-shadow text-label-lg"
               >
                 Explore Collection
               </button>
               <button
                 onClick={onShop}
-                className="btn-press px-lg py-sm rounded-xl bg-white/10 backdrop-blur border border-white/30 text-white font-bold hover:bg-white/20 transition-colors"
+                className="ripple btn-press px-lg py-sm rounded-xl bg-white/10 backdrop-blur border border-white/30 text-white font-bold hover:bg-white/20 transition-colors text-label-lg"
               >
                 Shop Now
               </button>
             </div>
+            {/* Trust stats */}
+            <div className="animate-fade-in mt-xl flex flex-wrap gap-lg text-white/80">
+              <div>
+                <p className="text-headline-md font-bold text-white">{collectibles.length || 45}+</p>
+                <p className="text-[11px] uppercase tracking-wider text-white/50">Models</p>
+              </div>
+              <div className="w-px bg-white/15 self-stretch" />
+              <div>
+                <p className="text-headline-md font-bold text-white">100%</p>
+                <p className="text-[11px] uppercase tracking-wider text-white/50">Authenticated</p>
+              </div>
+              <div className="w-px bg-white/15 self-stretch" />
+              <div>
+                <p className="text-headline-md font-bold text-white">Free</p>
+                <p className="text-[11px] uppercase tracking-wider text-white/50">Shipping over $100</p>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Scroll cue */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 text-white/50 animate-bounce">
+          <span className="material-symbols-outlined text-3xl">keyboard_arrow_down</span>
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-md py-xl space-y-xl">
+      <div className="max-w-6xl mx-auto px-md py-[5rem] space-y-[6rem]">
         {/* ===================== FEATURED ===================== */}
         <section>
           <SectionHead eyebrow="Hand-picked" title="Featured Cars" onMore={onShop} />

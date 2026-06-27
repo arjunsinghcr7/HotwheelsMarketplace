@@ -161,6 +161,45 @@ textarea:focus-visible,
   box-shadow: 0 18px 44px -14px rgba(0, 0, 0, 0.7);
 }
 
+/* Card tilt on hover — subtle 3D lean + lift for product cards */
+.card-tilt {
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+              box-shadow 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+              border-color 0.3s ease;
+  transform-style: preserve-3d;
+}
+.card-tilt:hover {
+  transform: translateY(-8px) perspective(900px) rotateX(3deg) scale(1.01);
+  box-shadow: 0 26px 56px -18px rgba(0, 0, 0, 0.75), 0 0 22px -10px rgba(255, 59, 48, 0.35);
+}
+
+/* Cinematic slow zoom for hero backgrounds (Ken Burns) */
+@keyframes kenburns {
+  0% { transform: scale(1.05); }
+  100% { transform: scale(1.18); }
+}
+.animate-kenburns { animation: kenburns 22s ease-out forwards; }
+
+/* Button ripple — emanates from centre on click (no JS) */
+.ripple { position: relative; overflow: hidden; }
+.ripple::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.45);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.ripple:active::after { animation: ripple 0.55s ease-out; }
+@keyframes ripple {
+  from { width: 0; height: 0; opacity: 0.5; }
+  to { width: 340px; height: 340px; opacity: 0; }
+}
+
 /* Image zoom on hover (apply to a wrapper around an <img>) */
 .hover-zoom { overflow: hidden; }
 .hover-zoom img { transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1); }
@@ -194,7 +233,10 @@ textarea:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-slide-up,
+  .animate-kenburns,
   .card-lift,
+  .card-tilt,
   .hover-zoom img { animation: none !important; transition: none !important; }
+  .ripple:active::after { animation: none !important; }
   html { scroll-behavior: auto; }
 }
