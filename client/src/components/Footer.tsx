@@ -137,7 +137,9 @@ export const Footer: React.FC = () => {
           <p className="flex items-center gap-3">
             <a href="#footer" className="hover:text-on-surface transition-colors">Privacy</a>
             <a href="#footer" className="hover:text-on-surface transition-colors">Terms</a>
-            <span>Built for collectors, by collectors.</span>
+            <span>
+              Designed &amp; Developed by <span className="text-on-surface font-bold">Arjun Singh</span>
+            </span>
           </p>
         </div>
       </div>
