@@ -42,6 +42,7 @@ import { HomePage } from './components/HomePage';
 import { CartDrawer } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
 import { ProductDetailModal } from './components/ProductDetailModal';
+import { MobileMenu } from './components/MobileMenu';
 import { CATALOG } from './data/catalog';
 import type { Profile } from './services/profile';
 import { getProfile, saveProfile, DEFAULT_PROFILE } from './services/profile';
@@ -91,6 +92,7 @@ function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<Collectible | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<Collectible[]>([]);
@@ -417,8 +419,23 @@ function App() {
         onSignIn={handleSignIn}
         onSignOut={handleSignOut}
         onUpdateProfile={handleUpdateProfile}
+        onMenuClick={() => setIsMobileMenuOpen(true)}
       />
-      
+
+      {/* Mobile navigation drawer (hamburger) */}
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        activeMenu={activeMenu}
+        onSetTab={handleSetTab}
+        onSetMenu={handleSetMenu}
+        onNavigateSection={handleNavigateSection}
+        onOpenRarityGuide={() => setIsRarityGuideOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
+
       <div className="flex h-full pt-16 pb-8 overflow-hidden">
         {/* Sidebar Left — hidden on the full-bleed Home landing */}
         {activeMenu !== 'Home' && (

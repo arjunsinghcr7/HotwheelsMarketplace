@@ -16,6 +16,7 @@ interface NavbarProps {
   onSignIn: (email: string, username: string) => void;
   onSignOut: () => void;
   onUpdateProfile: (patch: Partial<Profile>) => void;
+  onMenuClick: () => void;
 }
 
 type NavItem = { label: string; kind: 'tab' | 'section'; value: string };
@@ -44,6 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSignIn,
   onSignOut,
   onUpdateProfile,
+  onMenuClick,
 }) => {
   const [logoOk, setLogoOk] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -65,8 +67,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="flex justify-between items-center w-full px-margin-desktop h-16 fixed top-0 z-50 bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant">
-      <div className="flex items-center gap-lg min-w-0">
+    <header className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 fixed top-0 z-50 bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant">
+      <div className="flex items-center gap-sm md:gap-lg min-w-0">
+        {/* Mobile hamburger */}
+        <button
+          onClick={onMenuClick}
+          aria-label="Open menu"
+          className="btn-press xl:hidden p-2 -ml-2 text-on-surface hover:text-primary rounded-lg"
+        >
+          <span className="material-symbols-outlined">menu</span>
+        </button>
         <button onClick={() => setActiveTab('Home')} className="shrink-0 flex items-center" aria-label="HotWheels Paradise — Home">
           {logoOk ? (
             <img
