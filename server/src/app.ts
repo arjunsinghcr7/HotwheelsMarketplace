@@ -110,10 +110,14 @@ async function writeDB(data: Database): Promise<void> {
   await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-// System prompt for the AI pricing/condition assistant.
-const ASSISTANT_SYSTEM = `You are an expert Hot Wheels and die-cast collectible appraiser embedded in a collector marketplace app.
-Help users price their cars and judge condition. Be concise, practical, and friendly.
+// System prompt for the AI shopping concierge + appraiser.
+const ASSISTANT_SYSTEM = `You are the shopping concierge for "HotWheels Paradise", a premium die-cast marketplace. Be concise, practical, and friendly.
 
+Your two main jobs:
+1. RECOMMEND cars from the store catalog provided below. Match the shopper's budget, brand, category, rarity or vibe. Only recommend cars that appear in the catalog, and always cite the exact name and price. Suggest 2–4 options with a one-line reason each.
+2. REVIEW a specific car from the catalog when asked. Give a short verdict: what it is, its rarity/desirability, whether the price looks fair, and who it suits. Use the catalog's price and demand score as ground truth.
+
+You can also help with pricing and condition grading.
 When pricing, reason from: rarity tier (Mainline, Treasure Hunt (TH), Super Treasure Hunt (STH), Chase), brand, release year/age, and condition. Give an estimated price range in USD with a one-line rationale.
 
 When the user uploads a PHOTO, assess the visible condition: paint/Spectraflame quality, wheels/tires, packaging (carded vs loose, blister/card creases), and any visible defects or rub. Give a condition grade (Mint (M), Near Mint (NM), Very Good (VG), or worse) and a price range, and note what you cannot tell from the image. If the photo is unclear, say so.
@@ -132,8 +136,65 @@ function parseDataUrl(dataUrl: string): { mediaType: string; data: string } | nu
   return { mediaType: match[1], data: match[2] };
 }
 
-// Offline assistant: rule-based pricing & condition help when no API key is set.
-function heuristicReply(text: string, hasImage: boolean): string {
+// Build a compact catalog listing to ground the AI in real inventory + prices.
+function buildCatalogContext(cars: Collectible[]): string {
+  if (!cars.length) return 'STORE CATALOG: (currently unavailable)';
+  const lines = cars
+    .map((c) => `- ${c.name} | ${c.brand} | ${c.vehicleType} | ${c.releaseYear} | $${c.price.toFixed(2)} | ${c.rarityLevel} | demand ${c.demandScore ?? '-'}/100`)
+    .join('\n');
+  return `CURRENT STORE CATALOG (the only cars in stock — recommend ONLY from this list and cite exact name + price):\n${lines}`;
+}
+
+// Find the catalog car whose name best matches a free-text query.
+function findCar(t: string, cars: Collectible[]): Collectible | null {
+  let best: Collectible | null = null;
+  let bestScore = 0;
+  for (const c of cars) {
+    const name = c.name.toLowerCase();
+    const tokens = name.replace(/[()]/g, '').split(/\s+/).filter((w) => w.length > 2);
+    const hits = tokens.filter((w) => t.includes(w)).length;
+    const score = hits + (t.includes(name) ? 5 : 0);
+    if (score > bestScore) { bestScore = score; best = c; }
+  }
+  return bestScore >= 1 ? best : null;
+}
+
+// Offline catalog recommender (used when no API key is configured).
+function recommendFromCatalog(t: string, cars: Collectible[]): string {
+  let list = [...cars];
+  const budget = t.match(/(?:under|below|less than|<)\s*\$?(\d+)/);
+  if (budget) list = list.filter((c) => c.price <= Number(budget[1]));
+  const facet = list.filter((c) => t.includes(c.brand.toLowerCase()) || t.includes(c.vehicleType.toLowerCase()));
+  if (facet.length) list = facet;
+  if (/\bjdm\b/.test(t)) list = list.filter((c) => c.sections?.includes('jdm') || /jdm|japanese|drift|rotary/i.test(c.vehicleType));
+  if (/super treasure|\bsth\b/.test(t)) list = list.filter((c) => c.rarityLevel === 'Super Treasure Hunt');
+  else if (/\bchase\b/.test(t)) list = list.filter((c) => c.rarityLevel === 'Chase');
+  list.sort((a, b) => (b.demandScore ?? 0) - (a.demandScore ?? 0));
+  const top = list.slice(0, 4);
+  if (!top.length) return "I couldn't find a catalog match — try a brand (Porsche, Nissan…), a category (JDM, Hypercar…), or a budget like \"under $50\".";
+  return 'Here are my top picks from the store:\n' + top.map((c) => `• **${c.name}** — $${c.price.toFixed(2)} · ${c.rarityLevel}, ${c.brand} ${c.vehicleType}`).join('\n');
+}
+
+// Offline single-car review.
+function reviewCar(c: Collectible): string {
+  const tierNote: Record<string, string> = {
+    'Super Treasure Hunt': 'a grail-tier Super Treasure Hunt — Spectraflame paint, Real Riders, highly sought-after',
+    Chase: 'a limited Chase piece, much harder to find than mainline',
+    'Treasure Hunt': 'a Treasure Hunt — a limited run a step above mainline',
+    Mainline: 'a standard mainline release, easy to find',
+  };
+  const demand = c.demandScore ?? 80;
+  const heat = demand >= 92 ? 'red-hot demand' : demand >= 85 ? 'strong demand' : 'steady interest';
+  return (
+    `**${c.name}** — ${c.brand} · ${c.vehicleType}, ${c.releaseYear}\n` +
+    `It's ${tierNote[c.rarityLevel] ?? 'a collectible release'} with ${heat} (${demand}/100). ` +
+    `Listed at **$${c.price.toFixed(2)}** in ${c.condition} condition — fair for this tier. ` +
+    (demand >= 90 ? 'A safe buy that holds value — grab it if the condition checks out.' : 'A solid pickup if it fits your collection theme.')
+  );
+}
+
+// Offline assistant: catalog-aware recommend/review + rule-based pricing & condition.
+function heuristicReply(text: string, hasImage: boolean, catalog: Collectible[] = []): string {
   const t = text.toLowerCase().trim();
   const conditionGuide =
     'Condition grades:\n' +
@@ -144,7 +205,18 @@ function heuristicReply(text: string, hasImage: boolean): string {
 
   // Greeting / help
   if (/^(hi|hey|hello|yo|help|what can you do)\b/.test(t)) {
-    return "Hi! I can ballpark what a Hot Wheels or die-cast car is worth and explain how to grade condition. Tell me the car (and its rarity — Mainline, TH, STH, or Chase), or ask how condition grading works.";
+    return "Hi! I'm your HotWheels Paradise concierge. I can recommend cars from the store, review a specific model, or help with pricing and condition. Try \"recommend a JDM car under $30\" or \"review the Ferrari F40\".";
+  }
+
+  // Review a specific catalog car
+  if (catalog.length && /(review|tell me about|thoughts on|how good is|is the|worth it|should i (buy|get))/.test(t)) {
+    const found = findCar(t, catalog);
+    if (found) return reviewCar(found);
+  }
+
+  // Recommend from the catalog
+  if (catalog.length && /(recommend|suggest|looking for|what should|show me|find me|best|gift|budget|cheap|under \$?\d|below \$?\d)/.test(t)) {
+    return recommendFromCatalog(t, catalog);
   }
 
   // Condition / grading question (not a pricing question)
@@ -384,9 +456,17 @@ export function createApp() {
       const lastUser = [...messages].reverse().find((m) => m.role === 'user');
       const lastUserText = lastUser?.text || '';
 
+      // Load the live catalog so the assistant can recommend/review real stock.
+      let catalog: Collectible[] = [];
+      try {
+        catalog = (await readDB()).collectibles;
+      } catch {
+        // catalog stays empty — assistant still works for pricing/condition
+      }
+
       // Graceful fallback when the AI service isn't configured (no API key).
       if (!process.env.ANTHROPIC_API_KEY) {
-        return res.json({ reply: heuristicReply(lastUserText, !!imageDataUrl), source: 'offline' });
+        return res.json({ reply: heuristicReply(lastUserText, !!imageDataUrl, catalog), source: 'offline' });
       }
 
       // Lazy-load the SDK only when we actually have a key to use.
@@ -419,7 +499,7 @@ export function createApp() {
       const response = await client.messages.create({
         model: 'claude-opus-4-8',
         max_tokens: 1024,
-        system: ASSISTANT_SYSTEM,
+        system: `${ASSISTANT_SYSTEM}\n\n${buildCatalogContext(catalog)}`,
         messages: apiMessages,
       });
 

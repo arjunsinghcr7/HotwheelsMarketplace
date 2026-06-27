@@ -8,9 +8,9 @@ interface ChatTurn extends AssistantMessage {
 }
 
 const SUGGESTIONS = [
-  'What is a carded STH Mustang worth?',
-  'Price a loose Chase Skyline R34',
-  'How do I grade condition?',
+  'Recommend a JDM car under $30',
+  'Review the Ferrari F40',
+  'Best hypercar for a first buy?',
 ];
 
 export const AIAssistant: React.FC = () => {
@@ -18,7 +18,7 @@ export const AIAssistant: React.FC = () => {
   const [turns, setTurns] = useState<ChatTurn[]>([
     {
       role: 'assistant',
-      text: "Hi! I'm your Hot Wheels price assistant. Ask me what a car is worth, or upload a photo and I'll assess its condition.",
+      text: "Hi! I'm your HotWheels Paradise concierge. I can recommend cars from the store, review a specific model, or help with pricing & condition — just ask, or upload a photo.",
     },
   ]);
   const [input, setInput] = useState('');
@@ -95,10 +95,10 @@ export const AIAssistant: React.FC = () => {
               <span className="material-symbols-outlined">smart_toy</span>
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-label-md font-bold text-on-surface">Price Assistant</p>
+              <p className="text-label-md font-bold text-on-surface">Paradise Concierge</p>
               <p className="text-[11px] text-on-surface-variant flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_#4ade80]"></span>
-                Pricing & condition help
+                Recommend · review · price
               </p>
             </div>
             <button
