@@ -11,7 +11,10 @@ function findCar(t: string): Collectible | null {
   let bestScore = 0;
   for (const c of CATALOG) {
     const name = c.name.toLowerCase();
-    const tokens = name.replace(/[()]/g, '').split(/\s+/).filter((w) => w.length > 2);
+    // Match on the MODEL words (drop the brand) so "best ford" recommends Fords
+    // rather than matching a single Ford by its brand word.
+    const model = name.replace(c.brand.toLowerCase(), '').replace(/[()]/g, '').trim();
+    const tokens = model.split(/\s+/).filter((w) => w.length > 2);
     const hits = tokens.filter((w) => t.includes(w)).length;
     const score = hits + (t.includes(name) ? 5 : 0);
     if (score > bestScore) {
@@ -38,7 +41,7 @@ function recommend(t: string): string {
   return 'Here are my top picks from the store:\n' + top.map((c) => `• **${c.name}** — $${c.price.toFixed(2)} · ${c.rarityLevel}, ${c.brand} ${c.vehicleType}`).join('\n');
 }
 
-function review(c: Collectible): string {
+function review(c: Collectible, t = ''): string {
   const tierNote: Record<string, string> = {
     'Super Treasure Hunt': 'a grail-tier Super Treasure Hunt — Spectraflame paint, Real Riders, highly sought-after',
     Chase: 'a limited Chase piece, much harder to find than mainline',
@@ -47,12 +50,19 @@ function review(c: Collectible): string {
   };
   const demand = c.demandScore ?? 80;
   const heat = demand >= 92 ? 'red-hot demand' : demand >= 85 ? 'strong demand' : 'steady interest';
-  return (
+  const base =
     `**${c.name}** — ${c.brand} · ${c.vehicleType}, ${c.releaseYear}\n` +
     `It's ${tierNote[c.rarityLevel] ?? 'a collectible release'} with ${heat} (${demand}/100). ` +
     `Listed at **$${c.price.toFixed(2)}** in ${c.condition} condition — fair for this tier. ` +
-    (demand >= 90 ? 'A safe buy that holds value — grab it if the condition checks out.' : 'A solid pickup if it fits your collection theme.')
-  );
+    (demand >= 90 ? 'A safe buy that holds value — grab it if the condition checks out.' : 'A solid pickup if it fits your collection theme.');
+
+  // If the user asked about an open-box / loose example, give the lower range.
+  if (/loose|open[\s-]?box|used|worn|played/.test(t)) {
+    const lo = (c.price * 0.6).toFixed(2);
+    const hi = (c.price * 0.8).toFixed(2);
+    return base + `\n\nFor an **open-box / loose** example, expect roughly **$${lo} – $${hi}** (under the $${c.price.toFixed(2)} carded/mint price).`;
+  }
+  return base;
 }
 
 export function localAssistantReply(text: string, hasImage: boolean): string {
@@ -70,20 +80,15 @@ export function localAssistantReply(text: string, hasImage: boolean): string {
     return "Hi! I'm your HotWheels Paradise concierge. I can recommend cars from the store, review a specific model, or help with pricing & condition. Try \"recommend a JDM car under $30\" or \"review the Ferrari F40\".";
   }
 
-  // Review a specific catalog car
-  if (/(review|tell me about|thoughts on|how good is|is the|worth it|should i (buy|get))/.test(t)) {
-    const found = findCar(t);
-    if (found) return review(found);
-  }
+  // A specific catalog car is named → price / review THAT car (covers
+  // "best price for an open-box skyline", "review the F40", "is the Enzo worth it").
+  const car = findCar(t);
+  if (car) return review(car, t);
 
-  // Recommend from the catalog
+  // No specific car → general recommendation / browse intent.
   if (/(recommend|suggest|looking for|what should|show me|find me|best|top|gift|budget|cheap|under \$?\d|below \$?\d|jdm|hypercar|supercar|muscle|coupe|sedan)/.test(t)) {
     return recommend(t);
   }
-
-  // A bare car name (no verb) — review it if we recognise it
-  const named = findCar(t);
-  if (named && t.split(/\s+/).length <= 6) return review(named);
 
   // Condition / grading question (not a pricing question)
   if (/(grade|grading|condition|mint|near mint|how do i tell)/.test(t) && !/(worth|price|value|\$|how much)/.test(t)) {
