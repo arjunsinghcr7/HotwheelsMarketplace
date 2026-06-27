@@ -160,20 +160,56 @@ function findCar(t: string, cars: Collectible[]): Collectible | null {
   return bestScore >= 1 ? best : null;
 }
 
-// Offline catalog recommender (used when no API key is configured).
-function recommendFromCatalog(t: string, cars: Collectible[]): string {
+// Levenshtein distance for fuzzy brand matching ("buggati" -> "bugatti").
+function lev(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  const d: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) d[i][0] = i;
+  for (let j = 0; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[m][n];
+}
+
+// Detect a brand in the query, tolerating small typos.
+function findBrand(t: string, cars: Collectible[]): string | null {
+  const brands = [...new Set(cars.map((c) => c.brand))];
+  const words = t.split(/[^a-z0-9]+/).filter((w) => w.length >= 3);
+  for (const b of brands) {
+    for (const bw of b.toLowerCase().split(/[^a-z0-9]+/)) {
+      if (bw.length < 3) continue;
+      for (const w of words) {
+        if (w === bw) return b;
+        if (w.length >= 4 && bw.length >= 4 && lev(w, bw) <= 2) return b;
+      }
+    }
+  }
+  return null;
+}
+
+// Offline catalog recommender, optionally scoped to a brand.
+function recommendFromCatalog(t: string, cars: Collectible[], forcedBrand: string | null = null): string {
   let list = [...cars];
   const budget = t.match(/(?:under|below|less than|<)\s*\$?(\d+)/);
   if (budget) list = list.filter((c) => c.price <= Number(budget[1]));
-  const facet = list.filter((c) => t.includes(c.brand.toLowerCase()) || t.includes(c.vehicleType.toLowerCase()));
-  if (facet.length) list = facet;
+  if (forcedBrand) {
+    list = list.filter((c) => c.brand === forcedBrand);
+  } else {
+    const facet = list.filter((c) => t.includes(c.brand.toLowerCase()) || t.includes(c.vehicleType.toLowerCase()));
+    if (facet.length) list = facet;
+  }
   if (/\bjdm\b/.test(t)) list = list.filter((c) => c.sections?.includes('jdm') || /jdm|japanese|drift|rotary/i.test(c.vehicleType));
   if (/super treasure|\bsth\b/.test(t)) list = list.filter((c) => c.rarityLevel === 'Super Treasure Hunt');
   else if (/\bchase\b/.test(t)) list = list.filter((c) => c.rarityLevel === 'Chase');
+  else if (/\bth\b|treasure/.test(t)) list = list.filter((c) => c.rarityLevel === 'Treasure Hunt');
   list.sort((a, b) => (b.demandScore ?? 0) - (a.demandScore ?? 0));
   const top = list.slice(0, 4);
   if (!top.length) return "I couldn't find a catalog match — try a brand (Porsche, Nissan…), a category (JDM, Hypercar…), or a budget like \"under $50\".";
-  return 'Here are my top picks from the store:\n' + top.map((c) => `• **${c.name}** — $${c.price.toFixed(2)} · ${c.rarityLevel}, ${c.brand} ${c.vehicleType}`).join('\n');
+  const loose = /loose|open[\s-]?box|out of|used|worn/.test(t);
+  const heading = forcedBrand ? `${forcedBrand} in the store:` : 'Here are my top picks from the store:';
+  return `${heading}\n` + top.map((c) => `• **${c.name}** — $${c.price.toFixed(2)} · ${c.rarityLevel}, ${c.vehicleType}${loose ? ` (open-box ~$${(c.price * 0.6).toFixed(0)}–$${(c.price * 0.8).toFixed(0)})` : ''}`).join('\n');
 }
 
 // Offline single-car review (optionally open-box/loose aware via the query).
@@ -218,10 +254,13 @@ function heuristicReply(text: string, hasImage: boolean, catalog: Collectible[] 
   if (catalog.length) {
     const car = findCar(t, catalog);
     if (car) return reviewCar(car, t);
+    // A brand is named (typo-tolerant) → show/price that brand's lineup.
+    const brand = findBrand(t, catalog);
+    if (brand) return recommendFromCatalog(t, catalog, brand);
   }
 
   // No specific car → general recommendation / browse intent.
-  if (catalog.length && /(recommend|suggest|looking for|what should|show me|find me|best|top|gift|budget|cheap|under \$?\d|below \$?\d|jdm|hypercar|supercar|muscle|coupe|sedan)/.test(t)) {
+  if (catalog.length && /(recommend|suggest|looking for|what should|show me|find me|best|top|gift|budget|cheap|under \$?\d|below \$?\d|jdm|hypercar|supercar|muscle|coupe|sedan|electric|drift|rally)/.test(t)) {
     return recommendFromCatalog(t, catalog);
   }
 
@@ -257,7 +296,7 @@ function heuristicReply(text: string, hasImage: boolean, catalog: Collectible[] 
     ? "\n\nI can't grade the photo itself in offline mode — but using the guide above, tell me what you see (paint, wheels, packaging) and I'll factor it in."
     : '';
 
-  return `Ballpark for a **${tier}** piece: **${range}**.${conditionNote}${yearNote}` + imageNote;
+  return `Ballpark for a **${tier}** piece: **${range}**.${conditionNote}${yearNote} Name a specific car (e.g. "Bugatti Chiron") and I'll give its exact listed price.` + imageNote;
 }
 
 export function createApp() {
