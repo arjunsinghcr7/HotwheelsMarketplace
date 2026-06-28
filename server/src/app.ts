@@ -235,6 +235,22 @@ function reviewCar(c: Collectible, t = ''): string {
   return base;
 }
 
+// Answer superlative questions ("priciest", "cheapest", "rarest", …).
+function superlative(t: string, cars: Collectible[]): string | null {
+  const top = (sorted: Collectible[], label: string): string | null => {
+    const c = sorted[0];
+    if (!c) return null;
+    return `The ${label} car in the store is the **${c.name}** — **$${c.price.toFixed(2)}**, ${c.rarityLevel} (${c.brand} ${c.vehicleType}, demand ${c.demandScore ?? 80}/100).`;
+  };
+  if (/priciest|most expensive|highest price|costliest|dearest/.test(t)) return top([...cars].sort((a, b) => b.price - a.price), 'most expensive');
+  if (/cheapest|least expensive|lowest price|most affordable/.test(t)) return top([...cars].sort((a, b) => a.price - b.price), 'most affordable');
+  if (/rarest|most rare/.test(t)) return top([...cars].sort((a, b) => (b.rarityLevel === 'Super Treasure Hunt' ? 1 : 0) - (a.rarityLevel === 'Super Treasure Hunt' ? 1 : 0) || (b.demandScore ?? 0) - (a.demandScore ?? 0)), 'rarest');
+  if (/most popular|best ?sell|highest demand|hottest|most wanted/.test(t)) return top([...cars].sort((a, b) => (b.demandScore ?? 0) - (a.demandScore ?? 0)), 'most popular');
+  if (/newest|latest car|latest model|latest arrival/.test(t)) return top([...cars].sort((a, b) => b.releaseYear - a.releaseYear), 'newest');
+  if (/oldest/.test(t)) return top([...cars].sort((a, b) => a.releaseYear - b.releaseYear), 'oldest');
+  return null;
+}
+
 // Offline assistant: catalog-aware recommend/review + rule-based pricing & condition.
 function heuristicReply(text: string, hasImage: boolean, catalog: Collectible[] = []): string {
   const t = text.toLowerCase().trim();
@@ -248,6 +264,12 @@ function heuristicReply(text: string, hasImage: boolean, catalog: Collectible[] 
   // Greeting / help
   if (/^(hi|hey|hello|yo|help|what can you do)\b/.test(t)) {
     return "Hi! I'm your HotWheels Paradise concierge. I can recommend cars from the store, review a specific model, or help with pricing and condition. Try \"recommend a JDM car under $30\" or \"review the Ferrari F40\".";
+  }
+
+  // Superlatives ("priciest", "cheapest", "rarest", "most popular"…).
+  if (catalog.length) {
+    const sup = superlative(t, catalog);
+    if (sup) return sup;
   }
 
   // A specific catalog car is named → price / review THAT car.

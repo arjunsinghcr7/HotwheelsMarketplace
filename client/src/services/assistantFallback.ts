@@ -102,6 +102,22 @@ function review(c: Collectible, t = ''): string {
   return base;
 }
 
+// Answer superlative questions ("priciest", "cheapest", "rarest", …).
+function superlative(t: string): string | null {
+  const top = (sorted: Collectible[], label: string): string | null => {
+    const c = sorted[0];
+    if (!c) return null;
+    return `The ${label} car in the store is the **${c.name}** — **$${c.price.toFixed(2)}**, ${c.rarityLevel} (${c.brand} ${c.vehicleType}, demand ${c.demandScore ?? 80}/100).`;
+  };
+  if (/priciest|most expensive|highest price|costliest|dearest/.test(t)) return top([...CATALOG].sort((a, b) => b.price - a.price), 'most expensive');
+  if (/cheapest|least expensive|lowest price|most affordable/.test(t)) return top([...CATALOG].sort((a, b) => a.price - b.price), 'most affordable');
+  if (/rarest|most rare/.test(t)) return top([...CATALOG].sort((a, b) => (b.rarityLevel === 'Super Treasure Hunt' ? 1 : 0) - (a.rarityLevel === 'Super Treasure Hunt' ? 1 : 0) || (b.demandScore ?? 0) - (a.demandScore ?? 0)), 'rarest');
+  if (/most popular|best ?sell|highest demand|hottest|most wanted/.test(t)) return top([...CATALOG].sort((a, b) => (b.demandScore ?? 0) - (a.demandScore ?? 0)), 'most popular');
+  if (/newest|latest car|latest model|latest arrival/.test(t)) return top([...CATALOG].sort((a, b) => b.releaseYear - a.releaseYear), 'newest');
+  if (/oldest/.test(t)) return top([...CATALOG].sort((a, b) => a.releaseYear - b.releaseYear), 'oldest');
+  return null;
+}
+
 export function localAssistantReply(text: string, hasImage: boolean): string {
   const t = (text || '').toLowerCase().trim();
 
@@ -116,6 +132,10 @@ export function localAssistantReply(text: string, hasImage: boolean): string {
   if (/^(hi|hey|hello|yo|help|what can you do)\b/.test(t)) {
     return "Hi! I'm your HotWheels Paradise concierge. I can price or review any car, recommend cars by budget/brand/category, or help grade condition. Try \"price of the Bugatti Chiron\", \"review the Ferrari F40\", or \"best JDM under $30\".";
   }
+
+  // Superlatives ("priciest", "cheapest", "rarest", "most popular"…).
+  const sup = superlative(t);
+  if (sup) return sup;
 
   // A specific model is named → price / review THAT car.
   const car = findCar(t);
