@@ -39,13 +39,14 @@ import {
   addToCart, toggleWatch, getCart, setCartQty, removeFromCart, clearCart
 } from './services/collection';
 import { HomePage } from './components/HomePage';
-import { CartDrawer } from './components/CartDrawer';
+import { CartDrawer, computeTotals } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { MobileMenu } from './components/MobileMenu';
 import { CATALOG } from './data/catalog';
 import type { Profile } from './services/profile';
 import { getProfile, saveProfile, DEFAULT_PROFILE } from './services/profile';
+import { addOrder } from './services/settings';
 import { initTheme } from './services/theme';
 
 // Default images used for cars added without an uploaded photo.
@@ -285,6 +286,10 @@ function App() {
     toast('Removed from cart', 'info');
   };
   const handlePlaceOrder = () => {
+    if (cart.length > 0) {
+      const { total } = computeTotals(cart);
+      addOrder({ items: cart.map((c) => ({ name: c.name, price: c.price, qty: c.qty, image: c.image })), total });
+    }
     clearCart();
     setCart([]);
     toast('Order placed — thank you!', 'success');
@@ -660,8 +665,13 @@ function App() {
         onClose={() => setIsSettingsOpen(false)}
         collectionCount={myCollection.length}
         watchlistCount={watchlist.length}
+        cartCount={cart.reduce((n, c) => n + c.qty, 0)}
+        collectionValue={myTotalValue}
         onClearCollection={handleClearCollection}
         onClearWatchlist={handleClearWatchlist}
+        profile={profile}
+        onUpdateProfile={handleUpdateProfile}
+        onSignOut={handleSignOut}
       />
 
       {/* Pricing History Modal */}
