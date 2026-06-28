@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import type { Collectible } from '../services/api';
 import { ProductCard, ProductCardSkeleton } from './ProductCard';
 import { formatPrice } from '../utils/format';
+import { getSettings } from '../services/settings';
+
+// Does a car match a "collecting focus" preference?
+const matchesFocus = (c: Collectible, focus: string): boolean => {
+  switch (focus) {
+    case 'JDM': return !!c.sections?.includes('jdm') || /jdm|japanese|drift|rotary/i.test(c.vehicleType);
+    case 'Hypercars': return /hypercar/i.test(c.vehicleType);
+    case 'Muscle': return /muscle/i.test(c.vehicleType);
+    case 'Classics': return /classic|vintage/i.test(c.vehicleType);
+    default: return true; // Everything
+  }
+};
 
 interface ShopSectionProps {
   items: Collectible[]; // already search-filtered by the parent
@@ -68,6 +80,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [minYear, setMinYear] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [forYou, setForYou] = useState(false);
 
   // Facet options derived from the current search results.
   const allBrands = [...new Set(items.map((i) => i.brand))].sort();
@@ -95,6 +108,18 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
       (maxPrice === null || i.price <= maxPrice) &&
       (minYear === null || i.releaseYear >= minYear)
   );
+
+  // "For You" — apply the saved Collector Preferences as a filter.
+  if (forYou) {
+    const p = getSettings().collector;
+    shown = shown.filter(
+      (c) =>
+        (p.favoriteBrands.length === 0 || p.favoriteBrands.includes(c.brand)) &&
+        (p.preferredRarity === 'Any' || c.rarityLevel === p.preferredRarity) &&
+        c.price <= p.budgetMax &&
+        matchesFocus(c, p.focus)
+    );
+  }
   shown = [...shown].sort((a, b) => {
     switch (sort) {
       case 'newest': return b.releaseYear - a.releaseYear;
@@ -113,6 +138,16 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
           Shop All Cars <span className="text-on-surface-variant text-label-md font-normal">· {shown.length}</span>
         </h4>
         <div className="flex items-center gap-sm">
+          <button
+            onClick={() => setForYou((v) => !v)}
+            title="Filter by your Collector Preferences"
+            className={`btn-press flex items-center gap-1 px-sm py-2 rounded-lg border text-label-sm transition-colors ${
+              forYou ? 'racing-gradient text-white border-primary' : 'bg-surface-container-high border-outline-variant text-on-surface hover:border-primary'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+            For You
+          </button>
           <button
             onClick={() => setShowFilters((v) => !v)}
             className="xl:hidden btn-press flex items-center gap-1 px-sm py-2 rounded-lg bg-surface-container-high border border-outline-variant text-label-sm text-on-surface"
@@ -189,9 +224,15 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
               <span className="material-symbols-outlined text-on-surface-variant/30 text-6xl">search_off</span>
               <p className="text-headline-md font-bold text-on-surface">No cars found.</p>
               <p className="text-label-sm text-on-surface-variant max-w-sm">
-                {searchQuery ? <>Nothing matches "<span className="text-on-surface font-medium">{searchQuery}</span>" with these filters.</> : 'Try adjusting or clearing your filters.'}
+                {forYou
+                  ? 'Nothing in the catalog matches your Collector Preferences right now. Loosen them in Settings, or turn off "For You".'
+                  : searchQuery
+                    ? <>Nothing matches "<span className="text-on-surface font-medium">{searchQuery}</span>" with these filters.</>
+                    : 'Try adjusting or clearing your filters.'}
               </p>
-              {activeCount > 0 ? (
+              {forYou ? (
+                <button onClick={() => setForYou(false)} className="btn-press mt-2 px-lg py-sm rounded-xl racing-gradient text-white font-bold">Turn off For You</button>
+              ) : activeCount > 0 ? (
                 <button onClick={clearAll} className="btn-press mt-2 px-lg py-sm rounded-xl racing-gradient text-white font-bold">Clear filters</button>
               ) : onBrowse ? (
                 <button onClick={onBrowse} className="btn-press mt-2 px-lg py-sm rounded-xl racing-gradient text-white font-bold">Browse Collection</button>
