@@ -1,21 +1,50 @@
 // Shared price/number formatting utilities.
 //
-// All monetary values in the app are stored as numbers (USD). Render them
-// through formatPrice() so currency styling is consistent everywhere — product
-// cards, cart, checkout, order summary, admin, etc.
+// Prices are STORED in USD. The user can pick a display currency in Settings →
+// Preferences; formatPrice converts from USD using approximate static rates and
+// formats with the right locale/symbol. Call setActiveCurrency() when the
+// preference changes (the app re-renders so every price updates live).
 
-const priceFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-});
+// Approximate USD -> X conversion rates (demo only; not live FX).
+const RATES: Record<string, number> = { USD: 1, EUR: 0.92, GBP: 0.79, JPY: 157, INR: 83 };
+const LOCALES: Record<string, string> = { USD: 'en-US', EUR: 'de-DE', GBP: 'en-GB', JPY: 'ja-JP', INR: 'en-IN' };
+
+const formatters: Record<string, Intl.NumberFormat> = {};
+function formatter(code: string): Intl.NumberFormat {
+  return (formatters[code] ??= new Intl.NumberFormat(LOCALES[code] ?? 'en-US', {
+    style: 'currency',
+    currency: code,
+    maximumFractionDigits: code === 'JPY' ? 0 : 2,
+  }));
+}
+
+// Read the saved currency once at load so the first render is already correct.
+function readStoredCurrency(): string {
+  try {
+    const code = JSON.parse(localStorage.getItem('hw_settings') || '{}')?.preferences?.currency;
+    return code && code in RATES ? code : 'USD';
+  } catch {
+    return 'USD';
+  }
+}
+
+let activeCurrency = readStoredCurrency();
+
+export function setActiveCurrency(code: string): void {
+  activeCurrency = code in RATES ? code : 'USD';
+}
+
+export function getActiveCurrency(): string {
+  return activeCurrency;
+}
 
 /**
- * Format a numeric USD price as a currency string, e.g. 1250 -> "$1,250.00".
- * Coerces strings to numbers and falls back to "$0.00" for invalid input so a
- * bad value never crashes the UI.
+ * Format a USD price in the user's chosen display currency, e.g. 149.99 ->
+ * "$149.99" / "₹12,449.17" / "¥23,548". Coerces strings and falls back to 0.
  */
 export function formatPrice(price: number | string | null | undefined): string {
-  const value = typeof price === 'string' ? parseFloat(price) : price;
-  if (value == null || Number.isNaN(value)) return priceFormatter.format(0);
-  return priceFormatter.format(value);
+  const usd = typeof price === 'string' ? parseFloat(price) : price;
+  const value = usd == null || Number.isNaN(usd) ? 0 : usd;
+  const code = activeCurrency in RATES ? activeCurrency : 'USD';
+  return formatter(code).format(value * RATES[code]);
 }

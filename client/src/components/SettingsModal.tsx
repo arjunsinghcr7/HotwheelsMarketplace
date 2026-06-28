@@ -20,6 +20,7 @@ interface SettingsModalProps {
   profile: Profile;
   onUpdateProfile: (patch: Partial<Profile>) => void;
   onSignOut: () => void;
+  onCurrencyChange: (code: string) => void;
 }
 
 const SECTIONS = [
@@ -84,6 +85,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   profile,
   onUpdateProfile,
   onSignOut,
+  onCurrencyChange,
 }) => {
   const [active, setActive] = useState('account');
   const [settings, setSettings] = useState<Settings>(() => getSettings());
@@ -227,7 +229,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <Heading icon="public" title="Preferences" sub="Localise your experience." />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-sm">
           <Field label="Currency">
-            <select className={inputCls} value={settings.preferences.currency} onChange={(e) => update({ preferences: { ...settings.preferences, currency: e.target.value } })}>
+            <select className={inputCls} value={settings.preferences.currency} onChange={(e) => { update({ preferences: { ...settings.preferences, currency: e.target.value } }); onCurrencyChange(e.target.value); }}>
               <option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>INR</option>
             </select>
           </Field>

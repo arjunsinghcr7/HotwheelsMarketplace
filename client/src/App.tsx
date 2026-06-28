@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { formatPrice } from './utils/format';
+import { formatPrice, setActiveCurrency } from './utils/format';
 import { Toaster, toast } from './utils/toast';
 import { BackToTop } from './components/BackToTop';
 import { Navbar } from './components/Navbar';
@@ -94,6 +94,12 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Bumped whenever the display currency changes so all prices re-render.
+  const [, setCurrencyTick] = useState(0);
+  const handleCurrencyChange = (code: string) => {
+    setActiveCurrency(code);
+    setCurrencyTick((t) => t + 1);
+  };
   const [detailItem, setDetailItem] = useState<Collectible | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<Collectible[]>([]);
@@ -672,6 +678,7 @@ function App() {
         profile={profile}
         onUpdateProfile={handleUpdateProfile}
         onSignOut={handleSignOut}
+        onCurrencyChange={handleCurrencyChange}
       />
 
       {/* Pricing History Modal */}
