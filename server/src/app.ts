@@ -242,9 +242,9 @@ function superlative(t: string, cars: Collectible[]): string | null {
     if (!c) return null;
     return `The ${label} car in the store is the **${c.name}** — **$${c.price.toFixed(2)}**, ${c.rarityLevel} (${c.brand} ${c.vehicleType}, demand ${c.demandScore ?? 80}/100).`;
   };
-  if (/priciest|most expensive|highest price|costliest|dearest/.test(t)) return top([...cars].sort((a, b) => b.price - a.price), 'most expensive');
-  if (/cheapest|least expensive|lowest price|most affordable/.test(t)) return top([...cars].sort((a, b) => a.price - b.price), 'most affordable');
-  if (/rarest|most rare/.test(t)) return top([...cars].sort((a, b) => (b.rarityLevel === 'Super Treasure Hunt' ? 1 : 0) - (a.rarityLevel === 'Super Treasure Hunt' ? 1 : 0) || (b.demandScore ?? 0) - (a.demandScore ?? 0)), 'rarest');
+  if (/pric\w*est|most expensive|highest[\s-]?price|costliest|dearest/.test(t)) return top([...cars].sort((a, b) => b.price - a.price), 'most expensive');
+  if (/cheap\w*st|least expensive|lowest[\s-]?price|most affordable/.test(t)) return top([...cars].sort((a, b) => a.price - b.price), 'most affordable');
+  if (/rar(e|i)*st|most rare/.test(t)) return top([...cars].sort((a, b) => (b.rarityLevel === 'Super Treasure Hunt' ? 1 : 0) - (a.rarityLevel === 'Super Treasure Hunt' ? 1 : 0) || (b.demandScore ?? 0) - (a.demandScore ?? 0)), 'rarest');
   if (/most popular|best ?sell|highest demand|hottest|most wanted/.test(t)) return top([...cars].sort((a, b) => (b.demandScore ?? 0) - (a.demandScore ?? 0)), 'most popular');
   if (/newest|latest car|latest model|latest arrival/.test(t)) return top([...cars].sort((a, b) => b.releaseYear - a.releaseYear), 'newest');
   if (/oldest/.test(t)) return top([...cars].sort((a, b) => a.releaseYear - b.releaseYear), 'oldest');
