@@ -201,7 +201,7 @@ export const AIAssistant: React.FC = () => {
               }}
               rows={1}
               placeholder="Ask about a price or condition…"
-              className="flex-1 resize-none bg-surface-container-lowest border border-outline-variant rounded-xl px-sm py-2 max-h-24 outline-none focus:ring-1 focus:ring-secondary focus:border-secondary text-body-md text-on-surface placeholder:text-on-surface-variant/50"
+              className="flex-1 resize-none bg-surface-container-lowest border border-outline-variant rounded-xl px-sm py-2 max-h-24 leading-snug outline-none focus:ring-1 focus:ring-secondary focus:border-secondary text-label-sm text-on-surface placeholder:text-on-surface-variant/50 placeholder:truncate"
             />
             <button
               type="submit"
