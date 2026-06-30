@@ -49,7 +49,23 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [logoOk, setLogoOk] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
+  // Which homepage section the user last jumped to, so its nav item stays lit.
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  // Section highlights only make sense on Home — clear when we leave it.
+  useEffect(() => {
+    if (activeTab !== 'Home') setActiveSection(null);
+  }, [activeTab]);
+
+  // Back at the top of Home means no section is in focus → re-light "Home".
+  useEffect(() => {
+    const onScroll = () => {
+      if (window.scrollY < 100) setActiveSection(null);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Close the profile dropdown on outside click.
   useEffect(() => {
@@ -62,8 +78,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [profileOpen]);
 
   const handleNav = (item: NavItem) => {
-    if (item.kind === 'tab') setActiveTab(item.value);
-    else onNavigateSection(item.value);
+    if (item.kind === 'tab') {
+      setActiveSection(null);
+      setActiveTab(item.value);
+    } else {
+      setActiveSection(item.value);
+      onNavigateSection(item.value);
+    }
   };
 
   return (
@@ -93,7 +114,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
         <nav className="hidden xl:flex gap-1 items-center">
           {NAV_ITEMS.map((item) => {
-            const active = item.kind === 'tab' && activeTab === item.value;
+            const active =
+              item.kind === 'tab'
+                ? activeTab === item.value && (item.value !== 'Home' || !activeSection)
+                : activeTab === 'Home' && activeSection === item.value;
             return (
               <button
                 key={item.label}
