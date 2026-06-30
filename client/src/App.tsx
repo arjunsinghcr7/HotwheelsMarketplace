@@ -4,7 +4,6 @@ import { Toaster, toast } from './utils/toast';
 import { BackToTop } from './components/BackToTop';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
-import { VaultDiscoveryForm } from './components/VaultDiscoveryForm';
 import { FeaturedCard } from './components/FeaturedCard';
 import { ShopSection } from './components/ShopSection';
 import { DealsSection } from './components/DealsSection';
@@ -19,7 +18,6 @@ import { CommunityBoard } from './components/CommunityBoard';
 import { WatchlistCard } from './components/WatchlistCard';
 import { AIAssistant } from './components/AIAssistant';
 import { SettingsModal } from './components/SettingsModal';
-import type { CarFormData } from './components/VaultDiscoveryForm';
 import {
   fetchCollectibles,
   fetchDeals,
@@ -112,15 +110,6 @@ function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isRarityGuideOpen, setIsRarityGuideOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  // Vault Discovery is now a slide-in drawer; the launcher remembers which
-  // action (Buy / Sell / Track) the user intends so the form can highlight it.
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [formAction, setFormAction] = useState<'buy' | 'sell' | 'track'>('buy');
-  const openForm = (action: 'buy' | 'sell' | 'track') => {
-    setFormAction(action);
-    setIsFormOpen(true);
-  };
 
   // Load database items on start
   const loadData = async () => {
@@ -217,41 +206,50 @@ function App() {
     setMyCollection(deleteMyCar(id));
   };
 
-  // "Sell" — list the entered car on the marketplace.
-  const handleSellCar = async (formData: CarFormData) => {
-    await addCollectible({ ...formData, image: pickImage(formData.rarityLevel) });
-    // Reload items and update global stats
-    await loadData();
-    toast(`${formData.name} listed on the marketplace`, 'success');
-  };
-
-  // "Buy" — add the entered car to the user's personal collection.
-  const handleBuyCar = (formData: CarFormData) => {
-    handleAddMyCar({
-      name: formData.name,
-      price: formData.price,
-      rarityLevel: formData.rarityLevel,
-      releaseYear: formData.releaseYear,
-      image: pickImage(formData.rarityLevel),
-      notes: formData.notes || undefined,
-    });
-    toast(`${formData.name} added to your collection`, 'success');
-  };
-
-  // "Track" — add the entered car to the price watchlist.
-  const handleTrackCar = (formData: CarFormData) => {
-    setWatchlist(addWatch({
-      name: formData.name,
-      brand: formData.brand,
-      price: formData.price,
-      rarityLevel: formData.rarityLevel,
-      releaseYear: formData.releaseYear,
-    }));
-    toast(`Now tracking ${formData.name}`, 'info');
-  };
-
   const handleRemoveWatch = (id: string) => {
     setWatchlist(removeWatch(id));
+  };
+
+  // Buy / Sell / Track straight from a marketplace car's detail page, acting on
+  // that specific car (no need to re-enter its details in the Vault form).
+  const handleBuyItem = (item: Collectible) => {
+    handleAddMyCar({
+      name: item.name,
+      price: item.price,
+      rarityLevel: item.rarityLevel,
+      releaseYear: item.releaseYear,
+      image: item.image,
+      notes: item.notes,
+    });
+    toast(`${item.name} added to your collection`, 'success');
+  };
+
+  const handleSellItem = async (item: Collectible) => {
+    await addCollectible({
+      name: item.name,
+      brand: item.brand,
+      vehicleType: item.vehicleType,
+      scale: item.scale,
+      condition: item.condition,
+      releaseYear: item.releaseYear,
+      price: item.price,
+      rarityLevel: item.rarityLevel,
+      notes: item.notes ?? '',
+      image: item.image,
+    });
+    await loadData();
+    toast(`${item.name} listed on the marketplace`, 'success');
+  };
+
+  const handleTrackItem = (item: Collectible) => {
+    setWatchlist(addWatch({
+      name: item.name,
+      brand: item.brand,
+      price: item.price,
+      rarityLevel: item.rarityLevel,
+      releaseYear: item.releaseYear,
+    }));
+    toast(`Now tracking ${item.name}`, 'info');
   };
 
   // Add a marketplace car to the shopping cart.
@@ -486,34 +484,6 @@ function App() {
         ) : (
           <div className="h-full relative overflow-hidden">
 
-          {/* Left-side Buy / Sell / Track launchers that open the Vault Discovery slide-in */}
-          <div className="fixed bottom-24 left-4 xl:left-[17rem] z-30 flex items-center gap-2">
-            <button
-              onClick={() => openForm('buy')}
-              title="Buy — add a car to your collection"
-              className="flex items-center gap-1.5 pl-3 pr-4 py-3 rounded-full racing-gradient text-white font-bold shadow-xl hover:scale-[1.03] active:scale-95 transition-transform"
-            >
-              <span className="material-symbols-outlined">shopping_cart</span>
-              <span className="text-label-md">Buy</span>
-            </button>
-            <button
-              onClick={() => openForm('sell')}
-              title="Sell — list a car on the marketplace"
-              className="flex items-center gap-1.5 pl-3 pr-4 py-3 rounded-full bg-surface-container-high text-secondary border border-secondary font-bold shadow-xl hover:bg-secondary/10 active:scale-95 transition-all"
-            >
-              <span className="material-symbols-outlined">sell</span>
-              <span className="text-label-md">Sell</span>
-            </button>
-            <button
-              onClick={() => openForm('track')}
-              title="Track — add a car to your watchlist"
-              className="flex items-center gap-1.5 pl-3 pr-4 py-3 rounded-full bg-surface-container-high text-tertiary border border-tertiary font-bold shadow-xl hover:bg-tertiary/10 active:scale-95 transition-all"
-            >
-              <span className="material-symbols-outlined">visibility</span>
-              <span className="text-label-md">Track</span>
-            </button>
-          </div>
-
           {/* Main content (full width) */}
           <div id="market-scroll" className="h-full bg-background overflow-y-auto custom-scrollbar p-sm lg:p-lg flex flex-col gap-lg">
 
@@ -603,24 +573,6 @@ function App() {
 
           </div>
 
-          {/* Slide-in Vault Discovery drawer */}
-          {isFormOpen && (
-            <div className="fixed inset-0 z-50">
-              <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                onClick={() => setIsFormOpen(false)}
-              ></div>
-              <div className="absolute inset-y-0 left-0 w-full max-w-md shadow-2xl animate-slide-in-left">
-                <VaultDiscoveryForm
-                  initialAction={formAction}
-                  onBuy={handleBuyCar}
-                  onSell={handleSellCar}
-                  onTrack={handleTrackCar}
-                  onClose={() => setIsFormOpen(false)}
-                />
-              </div>
-            </div>
-          )}
           </div>
         )}
         </main>
@@ -657,6 +609,9 @@ function App() {
         onAddToCart={handleAddToCart}
         onToggleWishlist={handleToggleWishlist}
         onOpenDetails={handleOpenDetails}
+        onBuy={handleBuyItem}
+        onSell={handleSellItem}
+        onTrack={handleTrackItem}
       />
 
       {/* Toast notifications */}

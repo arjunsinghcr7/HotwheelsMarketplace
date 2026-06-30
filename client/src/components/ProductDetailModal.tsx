@@ -13,6 +13,9 @@ interface ProductDetailModalProps {
   onAddToCart: (item: Collectible) => void;
   onToggleWishlist: (item: Collectible) => void;
   onOpenDetails: (item: Collectible) => void;
+  onBuy: (item: Collectible) => void;
+  onSell: (item: Collectible) => void;
+  onTrack: (item: Collectible) => void;
 }
 
 const rarityBadge = (level: string) => {
@@ -41,6 +44,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onAddToCart,
   onToggleWishlist,
   onOpenDetails,
+  onBuy,
+  onSell,
+  onTrack,
 }) => {
   // Close on Escape.
   useEffect(() => {
@@ -121,6 +127,34 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               >
                 <span className="material-symbols-outlined" style={wishlisted ? { fontVariationSettings: "'FILL' 1", color: '#ff3b30' } : undefined}>favorite</span>
                 <span className="hidden sm:inline">{wishlisted ? 'Saved' : 'Wishlist'}</span>
+              </button>
+            </div>
+
+            {/* Buy / Sell / Track this specific car */}
+            <div className="grid grid-cols-3 gap-sm">
+              <button
+                onClick={() => onBuy(item)}
+                title="Buy — add this car to your collection"
+                className="btn-press flex items-center justify-center gap-1.5 px-sm py-sm rounded-xl racing-gradient text-white font-bold shadow-lg"
+              >
+                <span className="material-symbols-outlined text-[20px]">shopping_cart</span>
+                Buy
+              </button>
+              <button
+                onClick={() => onSell(item)}
+                title="Sell — list this car on the marketplace"
+                className="btn-press flex items-center justify-center gap-1.5 px-sm py-sm rounded-xl bg-surface-container-high text-secondary border border-secondary font-bold hover:bg-secondary/10 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">sell</span>
+                Sell
+              </button>
+              <button
+                onClick={() => onTrack(item)}
+                title="Track — add this car to your watchlist"
+                className="btn-press flex items-center justify-center gap-1.5 px-sm py-sm rounded-xl bg-surface-container-high text-tertiary border border-tertiary font-bold hover:bg-tertiary/10 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">visibility</span>
+                Track
               </button>
             </div>
 
